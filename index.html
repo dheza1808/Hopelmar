@@ -1,0 +1,571 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#a91f29">
+  <title>Job Tracker | Hopelmar</title>
+  <style>
+    :root{font-family:Inter,"Segoe UI",Arial,sans-serif;color:#17233b;background:#f5f7fb;font-synthesis:none;text-rendering:optimizeLegibility;--navy:#172c50;--blue:#2864dc;--muted:#758198;--line:#e6eaf1;--panel:#fff;--green:#16865c;--amber:#a66608;--red:#c34444}
+    *{box-sizing:border-box}body{margin:0;min-width:320px}button,input,select,textarea{font:inherit}button{cursor:pointer}
+    .app{min-height:100vh;display:grid;grid-template-columns:258px 1fr}.sidebar{background:#142746;color:#e8eef9;padding:24px 15px;display:flex;flex-direction:column;gap:26px}.brand{display:flex;align-items:center;gap:12px;padding:0 10px}.brand-mark{width:37px;height:37px;border-radius:12px;background:#316be0;color:white;display:grid;place-items:center;font-weight:800}.brand strong{display:block;font-size:16px;letter-spacing:.2px}.brand small{display:block;color:#9fb0cd;font-size:11px;margin-top:3px}.nav-label{padding:0 11px;color:#8598b8;text-transform:uppercase;letter-spacing:1px;font-size:10px;font-weight:800;margin:8px 0}.nav{display:grid;gap:5px}.nav button{border:0;background:transparent;color:#c1cde0;text-align:left;border-radius:9px;padding:11px 12px;display:flex;align-items:center;justify-content:space-between;font-size:13px}.nav button:hover,.nav button.active{background:#243d64;color:white}.nav .badge{background:#e8a644;color:#142746;border-radius:10px;padding:2px 7px;font-size:10px;font-weight:800}.side-foot{margin-top:auto;border-top:1px solid #2a3e60;padding:15px 10px 0;color:#9fb0cd;font-size:11px;line-height:1.55}.main{min-width:0}.topbar{height:76px;background:white;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 34px;gap:18px}.top-left{display:flex;align-items:center;gap:12px}.eyebrow{font-size:11px;color:var(--muted);margin-bottom:4px}.page-title{font-size:18px;font-weight:750;color:#17233b}.top-actions{display:flex;align-items:center;gap:10px}.top-actions label{font-size:11px;color:var(--muted);white-space:nowrap}.top-actions select{min-width:185px}.workspace{padding:28px 34px 42px;max-width:1600px;margin:auto}.page-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:22px}.page-head h1{font-size:23px;margin:0 0 7px;letter-spacing:-.4px}.page-head p{margin:0;color:var(--muted);font-size:13px;line-height:1.5}.head-actions{display:flex;gap:8px;flex-wrap:wrap}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:21px}.stat{background:white;border:1px solid var(--line);border-radius:12px;padding:17px 18px}.stat-label{font-size:11px;color:var(--muted)}.stat-value{font-size:26px;font-weight:760;margin-top:8px}.stat-note{font-size:10px;color:#97a0b0;margin-top:4px}.panel{background:white;border:1px solid var(--line);border-radius:12px;margin-bottom:18px;overflow:hidden}.panel-head{padding:17px 19px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px}.panel-head h2{margin:0;font-size:14px}.panel-head p{font-size:11px;color:var(--muted);margin:5px 0 0}.panel-body{padding:18px}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:720px}th{text-align:left;color:#8993a5;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.55px;padding:11px 14px;background:#fafbfd;border-bottom:1px solid var(--line);white-space:nowrap}td{font-size:12px;padding:13px 14px;border-bottom:1px solid #edf0f5;vertical-align:middle}tr:last-child td{border-bottom:0}.job-link{color:#245cce;font-weight:750;border:0;background:none;padding:0}.muted{color:var(--muted)}.small{font-size:10px}.tag{display:inline-flex;align-items:center;padding:5px 8px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap;background:#eef2f8;color:#5d687d}.tag.blue{background:#edf3ff;color:#2b5fc4}.tag.green{background:#e8f7ef;color:#18734d}.tag.amber{background:#fff4df;color:#9c680c}.tag.red{background:#fff0ef;color:#b7453d}.tag.gray{background:#f0f2f5;color:#687387}.btn{border:1px solid #dfe4ed;background:white;color:#33415a;border-radius:8px;padding:8px 11px;font-size:11px;font-weight:700;transition:.15s}.btn:hover{border-color:#9db5e9;background:#f8faff}.btn.primary{background:#2864dc;border-color:#2864dc;color:white}.btn.primary:hover{background:#1d54c0}.btn.success{background:#16865c;border-color:#16865c;color:white}.btn.warning{color:#995e04;border-color:#f0d7a7;background:#fffaf0}.btn.danger{color:#b44343;border-color:#f0caca}.btn.ghost{background:transparent}.btn.small-btn{padding:6px 8px;font-size:10px}.actions{display:flex;gap:6px;flex-wrap:wrap}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.field{display:grid;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:11px;color:#526078;font-weight:700}.field input,.field select,.field textarea,.top-actions select,.filter input,.filter select{width:100%;border:1px solid #dce2eb;border-radius:8px;padding:10px 11px;color:#26344c;background:white;outline:none;font-size:12px}.field textarea{min-height:90px;resize:vertical}.field input:focus,.field select:focus,.field textarea:focus,.filter input:focus,.filter select:focus{border-color:#7399e9;box-shadow:0 0 0 3px #2864dc18}.form-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}.notice{border-radius:9px;padding:12px 14px;background:#fff7e8;border:1px solid #f4e3bf;color:#7f5a1b;font-size:11px;line-height:1.5;margin-bottom:15px}.empty{padding:35px 20px;text-align:center;color:#8792a4;font-size:12px}.empty strong{display:block;color:#536077;margin-bottom:5px}.filters{display:flex;gap:9px;align-items:end;flex-wrap:wrap}.filter{display:grid;gap:5px;min-width:150px}.filter label{font-size:10px;color:var(--muted);font-weight:700}.task-list{display:grid;gap:9px}.task-item,.notification-item{padding:14px;border:1px solid var(--line);border-radius:10px;display:flex;justify-content:space-between;align-items:center;gap:14px}.task-copy strong,.notification-copy strong{font-size:12px}.task-copy p,.notification-copy p{margin:5px 0 0;color:var(--muted);font-size:11px;line-height:1.5}.unread{border-left:3px solid #2864dc;background:#f9fbff}.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.detail-card{border:1px solid var(--line);border-radius:10px;padding:15px}.detail-card h3{margin:0 0 13px;font-size:12px}.detail-row{display:flex;justify-content:space-between;gap:15px;padding:8px 0;border-bottom:1px solid #f0f2f5;font-size:11px}.detail-row:last-child{border:0}.detail-row span:first-child{color:var(--muted)}.timeline{display:grid;gap:0}.history-item{position:relative;padding:0 0 17px 21px;border-left:1px solid #dce4ef;margin-left:5px}.history-item:last-child{border-left-color:transparent;padding-bottom:0}.history-item:before{content:"";position:absolute;width:9px;height:9px;border-radius:50%;background:#2864dc;left:-5px;top:3px}.history-item strong{font-size:11px}.history-item p{margin:4px 0;color:#657188;font-size:11px;line-height:1.45}.history-item time{font-size:10px;color:#9aa3b1}.stages{display:grid;gap:8px}.stage-row{display:flex;align-items:center;gap:10px;font-size:11px;color:#778196}.stage-dot{width:17px;height:17px;border-radius:50%;border:2px solid #d9e0eb;flex:none}.stage-row.done{color:#18734d}.stage-row.done .stage-dot{background:#16865c;border-color:#16865c;box-shadow:inset 0 0 0 4px white}.stage-row.current{color:#2258c0;font-weight:750}.stage-row.current .stage-dot{border-color:#2864dc;box-shadow:inset 0 0 0 4px #dce8ff}.modal-backdrop{position:fixed;inset:0;background:#101b2c88;display:grid;place-items:center;padding:18px;z-index:5}.modal{width:min(560px,100%);max-height:90vh;overflow:auto;background:white;border-radius:14px;box-shadow:0 20px 70px #0e1e3840}.modal-head{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}.modal-head h2{font-size:15px;margin:0}.modal-body{padding:20px}.modal-close{border:0;background:none;color:#718096;font-size:22px}.helper{font-size:10px;color:var(--muted);line-height:1.5}.invoice-total{background:#f4f7fc;border-radius:9px;padding:14px;display:flex;justify-content:space-between;font-weight:750;font-size:13px}.toast{position:fixed;right:22px;bottom:22px;padding:12px 16px;background:#172c50;color:white;border-radius:9px;box-shadow:0 8px 28px #14274638;font-size:12px;z-index:9;animation:fade 3s forwards}@keyframes fade{0%,75%{opacity:1}100%{opacity:0;pointer-events:none}}.mobile-menu{display:none}
+    @media(max-width:980px){.app{grid-template-columns:220px 1fr}.workspace{padding:24px 22px}.topbar{padding:0 22px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:700px){.app{display:block}.sidebar{position:fixed;z-index:4;left:-270px;top:0;bottom:0;width:258px;transition:left .2s;box-shadow:8px 0 30px #15233a2b}.sidebar.open{left:0}.topbar{height:66px;padding:0 15px}.mobile-menu{display:inline-flex}.top-actions label{display:none}.top-actions select{min-width:135px}.workspace{padding:22px 14px 35px}.page-head{display:block}.head-actions{margin-top:13px}.page-head h1{font-size:20px}.stats{gap:9px}.stat{padding:13px}.stat-value{font-size:22px}.detail-grid,.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.panel-head{padding:14px}.panel-body{padding:13px}.task-item,.notification-item{align-items:flex-start;flex-direction:column}.filter{min-width:calc(50% - 6px);flex:1}.filters .btn{flex:1}}
+  </style>
+  <style>
+    :root{
+      color:#182b43;
+      background:#f2f5f9;
+      --navy:#102a4c;
+      --blue:#2868a8;
+      --muted:#718096;
+      --line:#e1e7ef;
+      --panel:#fff;
+      --green:#16806c;
+      --amber:#a96d16;
+      --red:#bd4d4d;
+    }
+    body{background:#f2f5f9;color:#182b43}
+    .app{grid-template-columns:252px minmax(0,1fr)}
+    .sidebar{position:sticky;top:0;height:100vh;background:#102a4c;padding:25px 16px 18px;gap:25px}
+    .brand-mark{background:#dca943;color:#102a4c;border-radius:10px;box-shadow:0 4px 12px #071a3028}
+    .brand strong{font-size:15px;letter-spacing:.35px}
+    .brand small{font-size:9px;letter-spacing:1.35px}
+    .nav-label{font-size:9px;letter-spacing:1.2px;color:#91a5bf}
+    .nav{gap:4px}
+    .nav button{min-height:39px;border-radius:7px;padding:10px 11px;color:#c5d2e2;font-size:12px}
+    .nav button:hover{background:#1b3a60}
+    .nav button.active{background:#254b75;color:#fff;box-shadow:inset 3px 0 #e1ad4d}
+    .nav .badge{background:#e5b24e;color:#25364a}
+    .side-foot{font-size:10px;color:#a6b6ca;border-color:#294362}
+    .topbar{position:sticky;top:0;z-index:3;height:72px;padding:0 32px;background:#fff;border-bottom-color:#e4e9f0;box-shadow:0 2px 9px #102a4c08}
+    .eyebrow{font-size:10px;letter-spacing:.15px;color:#7a8798}
+    .page-title{font-size:16px;font-weight:750;color:#183252;letter-spacing:.1px}
+    .top-actions select{border-radius:7px;border-color:#dbe3ec;min-height:38px;background:#fbfcfe}
+    .workspace{padding:30px 32px 48px;max-width:1540px}
+    .page-head{align-items:center;margin-bottom:21px}
+    .page-head h1{font-size:22px;color:#173353;letter-spacing:-.35px}
+    .page-head p{max-width:760px;color:#758398;font-size:12px}
+    .stats{gap:13px;margin-bottom:19px}
+    .stat{position:relative;border-color:#e2e8ef;border-radius:9px;padding:16px 17px;box-shadow:0 2px 7px #18325206}
+    .stat:before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:#d5a440;border-radius:9px 0 0 9px}
+    .stat-label{text-transform:uppercase;letter-spacing:.6px;font-size:9px;font-weight:750;color:#7d899a}
+    .stat-value{margin-top:7px;color:#193859;font-size:25px}
+    .stat-note{font-size:10px;color:#8995a5}
+    .panel{border-color:#e1e7ef;border-radius:9px;box-shadow:0 2px 8px #18325207}
+    .panel-head{padding:15px 18px;border-bottom-color:#e9edf3}
+    .panel-head h2{color:#203b5a;font-size:13px}
+    .panel-head p{color:#8390a1}
+    th{background:#f7f9fc;color:#77869b;font-size:9px;letter-spacing:.7px;padding:12px 14px;border-bottom-color:#e4e9f0}
+    td{padding:12px 14px;border-bottom-color:#edf0f4;color:#34465e;font-size:11px}
+    tbody tr:hover{background:#f9fbfd}
+    .job-link{color:#2868a8}
+    .tag{font-size:9px;border-radius:5px;padding:4px 7px}
+    .tag.blue{background:#eaf1f8;color:#285d8c}
+    .tag.green{background:#e8f4f0;color:#1b705f}
+    .tag.amber{background:#fbf1df;color:#8f611b}
+    .tag.red{background:#faecea;color:#a74943}
+    .tag.gray{background:#eff2f5;color:#68778a}
+    .btn{border-radius:6px;border-color:#d9e1eb;color:#40536b;font-size:10px}
+    .btn.primary{background:#2868a8;border-color:#2868a8}
+    .btn.primary:hover{background:#1f568d}
+    .btn.success{background:#16806c;border-color:#16806c}
+    .btn.warning{color:#8f611b;border-color:#ead5ad;background:#fdf8ed}
+    .btn.danger{color:#a74943;border-color:#eac9c6;background:#fffafa}
+    .field input,.field select,.field textarea,.top-actions select,.filter input,.filter select{border-color:#d9e1eb;border-radius:6px;background:#fff}
+    .field label,.filter label{color:#53677f}
+    .notice{background:#fbf5e9;border-color:#eddfc3;color:#7b633a;border-radius:7px}
+    .detail-card{border-color:#e2e8ef;border-radius:8px}
+    .detail-card h3{color:#203b5a}
+    .stage-row.done{color:#1b705f}
+    .stage-dot{border-color:#d3dce7}
+    .stage-row.done .stage-dot{background:#16806c;border-color:#16806c}
+    .stage-row.current{color:#285d8c}
+    .stage-row.current .stage-dot{border-color:#2868a8;box-shadow:inset 0 0 0 4px #e3edf7}
+    .history-item:before{background:#dca943}
+    .unread{border-left-color:#2868a8;background:#f4f8fc}
+    .modal{border-radius:10px}
+    .modal-backdrop{background:#25171988}
+    .modal-head h2{color:#203b5a}
+    .toast{background:#102a4c}
+    @media(max-width:980px){
+      .app{grid-template-columns:220px minmax(0,1fr)}
+      .workspace{padding:25px 22px 38px}
+      .topbar{padding:0 22px}
+    }
+    @media(max-width:700px){
+      .sidebar{height:100vh}
+      .topbar{height:66px;padding:0 14px}
+      .workspace{padding:21px 14px 34px}
+      .page-head{align-items:flex-start}
+    }
+  </style>
+  <style>
+    :root{color:#282526;background:#f6f5f5;--navy:#a91f29;--blue:#b32630;--muted:#777174;--line:#e6e1e2;--panel:#fff;--green:#a91f29;--amber:#a91f29;--red:#a91f29}
+    body{background:#f6f5f5;color:#282526}
+    .sidebar{background:#a91f29;color:#fff}
+    .brand-mark{background:#fff;color:#a91f29;box-shadow:none}
+    .brand small,.nav-label,.side-foot{color:#f0cdd0}
+    .nav button{color:#f7e7e8}
+    .nav button:hover{background:#ba343d;color:#fff}
+    .nav button.active{background:#fff;color:#a91f29;box-shadow:inset 3px 0 #f1b6bb}
+    .nav .badge{background:#fff;color:#a91f29}
+    .side-foot{border-color:#c64e56}
+    .topbar{background:#fff;border-bottom-color:#e8e3e4;box-shadow:0 2px 9px #51101408}
+    .page-title,.page-head h1,.panel-head h2,.detail-card h3,.modal-head h2{color:#35282a}
+    .workspace{background:#f6f5f5}
+    .stat,.panel,.detail-card{border-color:#e7e1e2;box-shadow:0 2px 8px #3a151707}
+    .stat:before{background:#b32630}
+    .stat-value{color:#a91f29}
+    th{background:#faf8f8;border-bottom-color:#e8e2e3}
+    td{color:#494244}
+    tbody tr:hover{background:#fdf8f8}
+    .job-link{color:#a91f29}
+    .tag.blue,.tag.green,.tag.amber,.tag.red{background:#fff0f1;color:#a91f29;border:1px solid #f0d7d9}
+    .tag.gray{background:#f1eeee;color:#635c5d}
+    .btn{border-color:#e2d9da;color:#4d4445}
+    .btn:hover{border-color:#d6a4a8;background:#fff8f8}
+    .btn.primary,.btn.success{background:#b32630;border-color:#b32630;color:#fff}
+    .btn.primary:hover,.btn.success:hover{background:#991c25}
+    .btn.warning{color:#a91f29;border-color:#edcdd0;background:#fff7f7}
+    .btn.danger{color:#a91f29;border-color:#e8c3c6;background:#fff}
+    .field input:focus,.field select:focus,.field textarea:focus,.filter input:focus,.filter select:focus{border-color:#c96168;box-shadow:0 0 0 3px #b3263015}
+    .notice{background:#fff4f4;border-color:#efd7d9;color:#85252b}
+    .stage-row.done{color:#a91f29}
+    .stage-row.done .stage-dot{background:#b32630;border-color:#b32630}
+    .stage-row.current{color:#a91f29}
+    .stage-row.current .stage-dot{border-color:#b32630;box-shadow:inset 0 0 0 4px #f8e4e5}
+    .history-item:before{background:#b32630}
+    .unread{border-left-color:#b32630;background:#fff8f8}
+    .toast{background:#a91f29}
+    .login-page{min-height:100vh;display:grid;grid-template-columns:minmax(0,1.08fr) minmax(390px,.92fr);background:#fff}
+    .login-intro{position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;padding:42px clamp(28px,6vw,88px);background:#a91f29;color:#fff}
+    .login-intro:after{content:"";position:absolute;width:420px;height:420px;border:1px solid #ffffff20;border-radius:50%;right:-170px;bottom:-205px;box-shadow:0 0 0 48px #ffffff08,0 0 0 96px #ffffff06;pointer-events:none}
+    .login-brand{display:flex;align-items:center;gap:12px;position:relative;z-index:1}
+    .login-brand-mark{width:42px;height:42px;border-radius:10px;background:#fff;color:#a91f29;display:grid;place-items:center;font-size:19px;font-weight:850}
+    .login-brand strong{display:block;font-size:15px;letter-spacing:.5px}
+    .login-brand small{display:block;margin-top:3px;color:#f2d5d7;font-size:9px;letter-spacing:1.5px}
+    .login-copy{position:relative;z-index:1;max-width:510px;margin:55px 0}
+    .login-kicker{display:inline-block;padding:7px 10px;border:1px solid #ffffff55;border-radius:4px;font-size:9px;letter-spacing:1.3px;font-weight:750}
+    .login-copy h1{max-width:480px;margin:21px 0 13px;font-size:clamp(32px,4.2vw,55px);line-height:1.08;letter-spacing:-1.6px}
+    .login-copy p{max-width:410px;margin:0;color:#f7e6e7;font-size:14px;line-height:1.8}
+    .login-subline{margin-top:24px;color:#f7e6e7;font-size:11px;letter-spacing:.25px}
+    .login-footer{position:relative;z-index:1;color:#f2d5d7;font-size:10px}
+    .login-panel{display:grid;place-items:center;padding:35px}
+    .login-card{width:min(410px,100%)}
+    .login-card h2{margin:0 0 8px;color:#33282a;font-size:25px;letter-spacing:-.5px}
+    .login-card>p{margin:0 0 27px;color:#777174;font-size:12px;line-height:1.7}
+    .login-card .field{margin-bottom:17px}
+    .login-card .field label{font-size:11px;color:#4f4546}
+    .login-card .field select{height:46px;border-radius:6px;border-color:#ded6d7;background:#fff}
+    .login-card .btn{width:100%;height:45px;margin-top:5px;font-size:12px}
+    .login-hint{margin-top:15px;padding:11px 12px;border-left:3px solid #b32630;background:#fff5f5;color:#766769;font-size:10px;line-height:1.6}
+    .login-security{display:flex;align-items:center;gap:8px;margin-top:25px;color:#8a8081;font-size:10px}
+    .login-security strong{color:#a91f29;font-size:11px}
+    .session-role{padding:8px 11px;border:1px solid #eee3e4;border-radius:5px;background:#fffafa;color:#8f2028;font-size:11px;font-weight:700}
+    .logout-btn{min-height:36px}
+    @media(max-width:800px){
+      .login-page{grid-template-columns:1fr}
+      .login-intro{min-height:300px;padding:27px 25px}
+      .login-copy{margin:35px 0 15px}
+      .login-copy h1{font-size:38px}
+      .login-copy p{font-size:12px}
+      .login-footer{display:none}
+      .login-panel{padding:38px 23px 48px}
+    }
+    @media(max-width:500px){
+      .login-copy h1{font-size:33px}
+      .session-role{display:none}
+      .topbar{padding:0 10px}
+    }
+    .login-page{
+      width:100%;
+      min-height:100vh;
+      min-height:100dvh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+      overflow:hidden;
+      padding:24px;
+      background:
+        radial-gradient(ellipse at 7% 18%,#fbe8e9 0,transparent 24%),
+        radial-gradient(ellipse at 94% 88%,#fff5d8 0,transparent 22%),
+        #f7f8fa;
+    }
+    .login-panel{position:relative;z-index:1;width:100%;display:flex;align-items:center;justify-content:center;padding:28px}
+    .login-card{
+      width:min(100%,480px);
+      padding:28px 30px 0;
+      border:1px solid #e1e6ee;
+      border-radius:10px;
+      background:#fff;
+      box-shadow:0 14px 32px #17243b20,0 2px 6px #17243b0c;
+    }
+    .login-brand{
+      display:flex;
+      justify-content:center;
+      margin:0 0 20px;
+      text-align:center;
+    }
+    .login-logo{display:block;width:min(100%,260px);height:auto;object-fit:contain}
+    .login-wordmark{color:#a91f29;font-family:Georgia,"Times New Roman",serif;font-size:38px;font-weight:900;letter-spacing:-2px;line-height:1}
+    .login-wordmark sup{position:relative;top:-.65em;margin-left:2px;color:#3b3031;font-family:Arial,sans-serif;font-size:10px;letter-spacing:0}
+    .login-brand small{display:block;margin-top:4px;color:#777174;font-family:Georgia,"Times New Roman",serif;font-size:10px;font-style:italic;letter-spacing:.35px}
+    .login-card h2{margin:0 0 14px;color:#343139;font-family:Consolas,"Courier New",monospace;font-size:11px;font-weight:700;letter-spacing:.75px;text-transform:uppercase}
+    .login-card>p{margin:0 0 16px;color:#6b7079;font-size:12px;line-height:1.6}
+    .login-access-notice{display:flex;gap:11px;align-items:flex-start;margin:0 -8px 20px;padding:12px 13px;border:1px solid #f2df9e;border-radius:6px;background:#fffdf2;color:#8f6327}
+    .login-shield{width:25px;height:25px;flex:none;display:grid;place-items:center;border:1px solid #eac765;border-radius:5px;color:#b27618;font-size:13px;font-weight:800}
+    .login-access-notice strong{display:block;margin:1px 0 4px;color:#75521f;font-family:Consolas,"Courier New",monospace;font-size:10px;letter-spacing:.7px}
+    .login-access-notice small{display:block;color:#9b7846;font-family:Consolas,"Courier New",monospace;font-size:9px;line-height:1.55}
+    .login-card .field{gap:6px;margin-bottom:15px}
+    .login-card .field label{color:#4d5663;font-family:Consolas,"Courier New",monospace;font-size:10px;font-weight:750;letter-spacing:.75px}
+    .login-card .field select,.login-card .field input{
+      height:42px;
+      padding:9px 12px;
+      border:1px solid #d6deea;
+      border-radius:6px;
+      background:#fff;
+      color:#47566d;
+      font-size:12px;
+    }
+    .login-card .field select:focus,.login-card .field input:focus{border-color:#b32630;box-shadow:0 0 0 3px #b3263014}
+    .login-pass-wrap{position:relative}
+    .login-pass-wrap input{padding-right:56px!important}
+    .login-pass-toggle{position:absolute;top:50%;right:7px;transform:translateY(-50%);height:28px;padding:0 7px;border:0;background:transparent;color:#738095;font-size:10px}
+    .login-format{margin:-7px 0 15px;color:#8893a1;font-family:Consolas,"Courier New",monospace;font-size:9px}
+    .login-options{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 0 16px}
+    .login-remember{display:flex;align-items:center;gap:7px;color:#586171;font-size:10px;cursor:pointer}
+    .login-remember input{width:14px;height:14px;margin:0;accent-color:#b32630}
+    .login-forgot{padding:0;border:0;background:transparent;color:#b32630;font-size:10px}
+    .login-card .btn{height:46px;margin:0 0 16px;border-radius:6px;background:#bd1f26;border-color:#bd1f26;box-shadow:0 2px 5px #a91f2933;font-size:12px}
+    .login-card .btn:hover{background:#a91b23}
+    .login-footer{
+      margin:0 -30px;
+      padding:12px 16px;
+      border-top:1px solid #eceff3;
+      color:#838894;
+      font-family:Consolas,"Courier New",monospace;
+      font-size:8px;
+      letter-spacing:.12px;
+      text-align:center;
+    }
+    @media(max-width:500px){
+      .login-page{padding:16px 12px}
+      .login-panel{width:100%;padding:16px 3px}
+      .login-card{width:min(100%,480px);padding:22px 20px 0}
+      .login-footer{margin-right:-20px;margin-left:-20px;font-size:7px}
+    }
+    .sidebar{
+      background:#fff;
+      color:#344054;
+      border-right:1px solid #e8eaee;
+      padding:24px 16px 18px;
+      gap:22px;
+      box-shadow:2px 0 8px #11182706;
+    }
+    .sidebar .brand-mark{
+      width:68px;
+      height:68px;
+      flex:none;
+      overflow:hidden;
+      display:block;
+      border-radius:0;
+      background:transparent;
+      color:transparent;
+      font-size:0;
+      box-shadow:none;
+    }
+    .sidebar .brand-mark img{display:block;width:100%;height:100%;object-fit:contain}
+    .brand{gap:12px;padding:0 8px}
+    .brand-mark{
+      width:40px;height:40px;border-radius:9px;
+      background:#fff0f1;color:#a91f29;box-shadow:none;
+      font-size:17px;
+    }
+    .brand strong{color:#262626;font-size:15px;letter-spacing:-.25px}
+    .brand small{color:#777174;font-size:10px;letter-spacing:.1px}
+    .sidebar .role-perspective{
+      position:relative;
+      display:grid;
+      gap:5px;
+      margin:0 2px;
+      padding:14px 40px 14px 15px;
+      border:1px solid #e1e7ef;
+      border-radius:9px;
+      background:#f8fafc;
+    }
+    .role-perspective-label{color:#91a0b6;font-size:10px;font-weight:800;letter-spacing:1px}
+    .role-perspective-name{color:#29364a;font-size:13px;font-weight:700;line-height:1.35}
+    .role-perspective-control{position:absolute;right:13px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:18px}
+    .sidebar .nav-label{margin:1px 9px 8px;color:#99a1ad;font-size:9px;letter-spacing:1.1px}
+    .sidebar .nav{gap:4px}
+    .sidebar .nav button{
+      min-height:43px;
+      justify-content:flex-start;
+      gap:8px;
+      padding:9px 11px;
+      border:1px solid transparent;
+      border-radius:8px;
+      background:transparent;
+      color:#536176;
+      font-size:12px;
+      font-weight:550;
+    }
+    .sidebar .nav button:hover{background:#f8f8f9;color:#303b4d}
+    .sidebar .nav button.active{
+      background:#fff1f1;
+      border-color:#ffdddd;
+      color:#b32630;
+      box-shadow:0 1px 3px #a91f2910;
+      font-weight:700;
+    }
+    .nav-item-label{display:flex;align-items:center;gap:12px;min-width:0}
+    .nav-icon{width:19px;flex:none;text-align:center;color:#95a2b5;font-size:16px;line-height:1}
+    .sidebar .nav button.active .nav-icon{color:#b32630}
+    .sidebar .nav .badge{margin-left:auto;background:#b32630;color:#fff}
+    .sidebar .side-foot{color:#8e97a5;border-color:#e8eaee;font-size:10px}
+    @media(max-width:700px){
+      .sidebar{background:#fff;border-right:1px solid #e8eaee}
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <div id="modal-root"></div>
+  <script>
+  (() => {
+    "use strict";
+    const roles=["Sales / CS","Sales Support","Operasional","Admin Invoice + Pengadaan","Manager"];
+    const menuByRole={
+      "Sales / CS":[["Dashboard","dashboard"],["Quotation Baru","newQuotation"],["Daftar Quotation","quotations"],["Pelanggan","customers"],["Tugas Tambahan","salesTasks"],["Quotation Masuk","incoming"]],
+      "Sales Support":[["Tugas Job Order","jobOrders"],["Biaya di Luar Penawaran","extraCosts"]],
+      "Operasional":[["Pengiriman Laut","sea"],["Pengiriman Udara","air"],["Data Tagihan Udara","airBills"]],
+      "Admin Invoice + Pengadaan":[["Tagihan","invoices"],["Petty Cash","pettyCash"],["Pengadaan","procurement"]],
+      "Manager":[["Pemantauan Data","monitoring"]]
+    };
+    const stageLabel={quotation:"Quotation",waiting:"Menunggu kustomer",revision:"Revisi quotation",legal:"Cek legalitas PT",jobOrder:"Job Order",extraCost:"Biaya tambahan",sea:"Pengiriman Laut",air:"Pengiriman Udara",invoice:"Invoice",done:"Selesai"};
+    const stageOwner={quotation:"Sales / CS",waiting:"Sales / CS",revision:"Sales / CS",legal:"Sales / CS",jobOrder:"Sales Support",extraCost:"Sales Support",sea:"Operasional",air:"Operasional",invoice:"Admin Invoice + Pengadaan",done:"Admin Invoice + Pengadaan"};
+    const workStages=["quotation","waiting","revision","legal","jobOrder","extraCost","sea","air","invoice","done"];
+    const customerNames=["Arunika Pangan Nusantara","Bumi Karya Elektrik","Cakrawala Tekstil Mandiri","Daya Prima Otomotif","Elang Timur Mineral","Fajar Medika Utama","Gemilang Furnitur Indonesia","Harapan Jaya Komponen","Indo Maritim Sejahtera","Jaya Abadi Kemasan","Kirana Alat Berat","Lentera Rasa Indonesia","Mitra Baja Persada","Nusa Karya Digital","Oceanic Parts Indonesia","Pilar Sukses Farmasi","Quanta Home Living","Rimba Sawit Makmur","Samudra Kaca Industri","Tirta Niaga Global","Utama Mesin Presisi","Vista Pangan Sejati","Wahana Plastik Sentosa","Yasa Tekno Mandiri","Zamrud Lautan Logistik","Aksara Kertas Perkasa","Bintang Perkasa Otomotif","Cipta Busana Global","Delta Sumber Energi","Eksakta Laboratorium"];
+    const stageDistribution=["quotation","waiting","waiting","revision","legal","jobOrder","jobOrder","extraCost","extraCost","sea","sea","sea","air","air","air","invoice","invoice","invoice","done","done","done","done","done","done","done","quotation","jobOrder","sea","air","legal"];
+    let state,activeRole=null,activePage="dashboard",detailId=null,modalSubmit=null,toastTimer,rememberedRole=null;
+    const money=n=>new Intl.NumberFormat("id-ID",{style:"currency",currency:"IDR",maximumFractionDigits:0}).format(Number(n)||0);
+    const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+    const dateFormat=d=>{const x=new Date(d),date=new Intl.DateTimeFormat("id-ID",{day:"2-digit",month:"short",year:"numeric"}).format(x),time=new Intl.DateTimeFormat("id-ID",{hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).format(x);return `${date}, ${time}`};
+    const dateInput=d=>{const x=new Date(d);return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,"0")}-${String(x.getDate()).padStart(2,"0")}`};
+    const nowIso=()=>new Date().toISOString();
+    function seedData(){
+      const jobs=customerNames.map((customer,i)=>{
+        const created=new Date();created.setDate(created.getDate()-(21-(i%21)));created.setHours(8+(i%9),[5,15,25,35,45,55][i%6],0,0);
+        const stage=stageDistribution[i],type=i%3===0?"Reguler":"Insidental",route=i%2===0?"Laut":"Udara";
+        const job={id:i+1,qn:`QN-${String(i+1).padStart(3,"0")}`,jobNumber:["jobOrder","extraCost","sea","air","invoice","done"].includes(stage)?`JO-${String(i+1).padStart(3,"0")}`:"",customer,route,type,stage,status:stage==="done"?"Selesai":stage==="revision"?"Perlu perbaikan":"Berjalan",createdAt:created.toISOString(),baseAmount:1800000+((i*437000)%8400000),customerType:i%4===0?"Baru":"Lama",extraCosts:[],history:[],invoiceCreated:false,docsChecked:false,repairNote:""};
+        job.history.push({text:"Quotation dibuat oleh Sales / CS.",at:created.toISOString()});
+        if(stage!=="quotation"){let flow=["quotation"];if(type==="Insidental")flow.push("waiting","legal");flow.push("jobOrder");if(stage==="extraCost")flow.push("extraCost");if(["sea","air","invoice","done"].includes(stage))flow.push(route==="Laut"?"sea":"air");if(["invoice","done"].includes(stage))flow.push("invoice");if(stage==="done")flow.push("done");for(let j=1;j<flow.length;j++){let t=new Date(created);t.setHours(t.getHours()+j*4);job.history.push({text:`Tahap ${stageLabel[flow[j]]} tercatat.`,at:t.toISOString()})}}
+        if(stage==="extraCost"){job.extraCosts.push({description:"Biaya penanganan tambahan",amount:450000,at:new Date(created.getTime()+86400000).toISOString()})}
+        if(["invoice","done"].includes(stage))job.invoiceCreated=true;
+        return job;
+      });
+      const notifications=[];
+      jobs.filter(j=>j.stage!=="done").forEach((j,i)=>notifications.push({id:`N-${j.id}`,role:stageOwner[j.stage],jobId:j.id,message:`${j.qn} — ${j.status==="Perlu perbaikan"?"Perlu ditindaklanjuti: "+stageLabel[j.stage]:`Menunggu tindakan pada tahap ${stageLabel[j.stage]}.`}`,at:new Date(new Date(j.createdAt).getTime()+((i%5)+1)*3600000).toISOString(),read:i%3===0}));
+      const taskLabels=["Lengkapi dokumen legal customer baru","Hubungi customer untuk konfirmasi jadwal","Konfirmasi detail alamat pengiriman","Minta dokumen identitas perusahaan","Negosiasi jadwal keberangkatan","Periksa kelengkapan dokumen customer","Konfirmasi kebutuhan penanganan khusus"];
+      const tasks=taskLabels.map((description,i)=>({id:i+1,description,at:new Date(Date.now()-(i+1)*86400000).toISOString(),kind:i%2?"Hubungi customer untuk konfirmasi atau negosiasi":"Input data dan dokumen legal customer baru"}));
+      const pettyCash=["Parkir kendaraan operasional","Konsumsi koordinasi lapangan","Materai dokumen pengiriman","Biaya kurir dokumen","Perlengkapan kantor","Transportasi pengambilan dokumen","Biaya fotokopi berkas"].map((description,i)=>({id:i+1,description,amount:[85000,175000,12000,65000,210000,95000,38000][i],at:new Date(Date.now()-(i+2)*86400000).toISOString()}));
+      const procurement=["Label dokumen pengiriman","Perlengkapan pengarsipan","Timbangan paket operasional","Tinta printer kantor","Peralatan keselamatan kerja"].map((description,i)=>({id:i+1,description,status:["Diajukan","Disetujui","Ditolak","Diajukan","Disetujui"][i],at:new Date(Date.now()-(i+1)*86400000).toISOString()}));
+      return {jobs,notifications,tasks,pettyCash,procurement,nextId:31,nextTask:8,nextCash:8,nextProcurement:6};
+    }
+    function persist(){/* Demo data intentionally remains in memory only. */}
+    function notify(role,job,message){state.notifications.unshift({id:`N-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,role,jobId:job?.id??null,message,at:nowIso(),read:false})}
+    function log(job,text){job.history.unshift({text,at:nowIso()})}
+    function getJob(id){return state.jobs.find(j=>j.id===Number(id))}
+    function unreadCount(role){return state.notifications.filter(n=>n.role===role&&!n.read).length}
+    function statusTag(job){const color=job.status==="Selesai"?"green":job.status==="Perlu perbaikan"?"red":job.stage==="waiting"?"amber":"blue";return `<span class="tag ${color}">${esc(job.status==="Selesai"?"Selesai":job.status==="Perlu perbaikan"?"Perlu perbaikan":stageLabel[job.stage])}</span>`}
+    function routeTag(route){return `<span class="tag gray">${esc(route)}</span>`}
+    function jobLink(job){return `<button class="job-link" data-action="detail" data-id="${job.id}">${esc(job.qn)}</button>`}
+    function pageTitle(){if(detailId)return "Detail Job";for(const [label,key] of [...(menuByRole[activeRole]||[]),["Notifikasi","notifications"],["Arsip","archive"]])if(key===activePage)return label;return "Dashboard"}
+    function navIcon(key){return ({dashboard:"▦",newQuotation:"＋",quotations:"▤",customers:"♧",salesTasks:"☷",incoming:"↙",jobOrders:"▣",extraCosts:"＋",sea:"▱",air:"✈",airBills:"▤",invoices:"▤",pettyCash:"＋",procurement:"▧",monitoring:"▥",notifications:"◉",archive:"▣",reset:"↻"})[key]||"•"}
+    function renderLogin(){
+      return `<main class="login-page"><section class="login-panel"><form class="login-card" id="login-form"><div class="login-brand"><img class="login-logo" src="./assets/hopelmar-logo.jpeg" alt="Hopelmar Logistics"></div><div class="login-access-notice"><span class="login-shield">✓</span><span><strong>KHUSUS AKUN INTERNAL</strong><small>Akses sistem dibatasi untuk role kantor yang telah ditentukan.</small></span></div><h2>AKUN KANTOR / ROLE</h2><div class="field"><label for="role-login">PILIH ROLE AKUN</label><select name="role" id="role-login" required><option value="" ${rememberedRole?"":"selected"} disabled>Pilih role kantor</option>${roles.map(role=>`<option value="${esc(role)}" ${rememberedRole===role?"selected":""}>${esc(role)}</option>`).join("")}</select></div><div class="login-format">Akun menggunakan nama role kantor, bukan nama orang.</div><h2>KUNCI AKSES / PASSCODE</h2><div class="field login-pass-wrap"><input id="passcode-login" type="password" autocomplete="off" placeholder="Passcode tidak diperlukan untuk demo" aria-label="Passcode demo"><button class="login-pass-toggle" type="button" data-action="toggle-pass" aria-label="Tampilkan passcode">Lihat</button></div><div class="login-options"><label class="login-remember"><input id="remember-role" type="checkbox" ${rememberedRole?"checked":""}> Ingat role di halaman ini</label><button class="login-forgot" type="button" data-action="forgot-access">Lupa akses?</button></div><button class="btn primary" type="submit">Masuk ke Job Tracker <span aria-hidden="true">→</span></button><div class="login-footer">PT HOPELMAR INTERNATIONAL</div></form></section></main>`;
+    }
+    function shell(){
+      const menu=menuByRole[activeRole]||[];
+      const navItems=menu.map(([label,key])=>`<button class="${activePage===key?"active":""}" data-action="navigate" data-page="${key}"><span class="nav-item-label"><span class="nav-icon" aria-hidden="true">${navIcon(key)}</span><span>${esc(label)}</span></span>${key==="incoming"&&state.jobs.filter(j=>j.stage==="waiting").length?`<span class="badge">${state.jobs.filter(j=>j.stage==="waiting").length}</span>`:""}</button>`).join("");
+      const unread=unreadCount(activeRole);
+      document.getElementById("app").innerHTML=`<div class="app"><aside class="sidebar" id="sidebar"><div class="brand"><div class="brand-mark"><img src="./assets/hopelmar-symbol.jpeg" alt="Logo Hopelmar"></div><div><strong>PT Hopelmar International</strong><small>Freight Forwarding &amp; Logistics</small></div></div><div class="role-perspective"><span class="role-perspective-label">ACTIVE PERSPECTIVE</span><strong class="role-perspective-name">Role: ${esc(activeRole)}</strong><span class="role-perspective-control" aria-hidden="true">☷</span></div><div><div class="nav-label">MENU</div><nav class="nav">${navItems}</nav></div><div><div class="nav-label">UMUM</div><nav class="nav"><button class="${activePage==="notifications"?"active":""}" data-action="navigate" data-page="notifications"><span class="nav-item-label"><span class="nav-icon" aria-hidden="true">${navIcon("notifications")}</span><span>Notifikasi</span></span>${unread?`<span class="badge">${unread}</span>`:""}</button><button class="${activePage==="archive"?"active":""}" data-action="navigate" data-page="archive"><span class="nav-item-label"><span class="nav-icon" aria-hidden="true">${navIcon("archive")}</span><span>Arsip</span></span></button><button data-action="reset"><span class="nav-item-label"><span class="nav-icon" aria-hidden="true">${navIcon("reset")}</span><span>Reset data contoh</span></span></button></nav></div><div class="side-foot">Simulasi proses ekspedisi<br>Laut dan udara · Data tersimpan selama sesi</div></aside><main class="main"><header class="topbar"><div class="top-left"><button class="btn mobile-menu" data-action="menu">☰</button><div><div class="eyebrow">PT Hopelmar · ${esc(activeRole)}</div><div class="page-title">Job Tracker</div></div></div><div class="top-actions"><span class="session-role">${esc(activeRole)}</span><button class="btn logout-btn" data-action="logout">Keluar</button></div></header><section class="workspace" id="workspace">${detailId?renderDetail(getJob(detailId)):renderPage()}</section></main></div>`;
+    }
+    function pageHeader(title,description,actions=""){return `<div class="page-head"><div><h1>${title}</h1><p>${description}</p></div><div class="head-actions">${actions}</div></div>`}
+    function stat(label,value,note){return `<div class="stat"><div class="stat-label">${label}</div><div class="stat-value">${value}</div><div class="stat-note">${note}</div></div>`}
+    function jobTable(jobs,includeActions=true){
+      if(!jobs.length)return `<div class="empty"><strong>Belum ada job pada daftar ini</strong>Job yang sesuai akan muncul di sini.</div>`;
+      return `<div class="table-wrap"><table><thead><tr><th>No. Job</th><th>Customer</th><th>Jalur / Tipe</th><th>Tahap</th><th>Dibuat</th>${includeActions?"<th>Aksi</th>":""}</tr></thead><tbody>${jobs.map(j=>`<tr><td>${jobLink(j)}${j.jobNumber?`<div class="small muted">${esc(j.jobNumber)}</div>`:""}</td><td><strong>${esc(j.customer)}</strong></td><td>${routeTag(j.route)} <span class="tag gray">${esc(j.type)}</span></td><td>${statusTag(j)}</td><td>${dateFormat(j.createdAt)}</td>${includeActions?`<td><div class="actions">${actionButtons(j)}</div></td>`:""}</tr>`).join("")}</tbody></table></div>`;
+    }
+    function repairButton(job){if(job.stage==="done")return "";return `<button class="btn danger small-btn" data-action="repair" data-id="${job.id}">Kembalikan (ada kesalahan)</button>`}
+    function actionButtons(j){
+      const buttons=[];
+      if(activeRole==="Sales / CS"){
+        if(j.stage==="quotation")buttons.push(`<button class="btn primary small-btn" data-action="verify-quotation" data-id="${j.id}">Verifikasi & kirim quotation</button>`);
+        if(j.stage==="revision")buttons.push(`<button class="btn primary small-btn" data-action="resend" data-id="${j.id}">Revisi & kirim ulang</button>`);
+        if(j.stage==="legal")buttons.push(`<button class="btn primary small-btn" data-action="legal" data-id="${j.id}">Cek legalitas PT</button>`);
+      }
+      if(activeRole==="Sales Support"){
+        if(j.stage==="jobOrder")buttons.push(`<button class="btn primary small-btn" data-action="issue-number" data-id="${j.id}">Terbitkan Job Number</button>`);
+        if(j.stage==="extraCost")buttons.push(`<button class="btn primary small-btn" data-action="save-extra" data-id="${j.id}">Input biaya</button>`);
+      }
+      if(activeRole==="Operasional"&&["sea","air"].includes(j.stage))buttons.push(j.docsChecked?`<button class="btn success small-btn" data-action="complete-shipping" data-id="${j.id}">Selesaikan pekerjaan (Job Done)</button>`:`<button class="btn primary small-btn" data-action="check-docs" data-id="${j.id}">Cek dokumen dan Incoterm</button>`);
+      if(activeRole==="Admin Invoice + Pengadaan"&&j.stage==="invoice")buttons.push(`<button class="btn primary small-btn" data-action="${j.invoiceCreated?"send-invoice":"create-invoice"}" data-id="${j.id}">${j.invoiceCreated?"Kirim invoice":"Buat invoice"}</button>`);
+      if(j.stage!=="done"&&activeRole===stageOwner[j.stage])buttons.push(repairButton(j));
+      buttons.unshift(`<button class="btn ghost small-btn" data-action="detail" data-id="${j.id}">Detail</button>`);
+      return buttons.join("");
+    }
+    function renderPage(){
+      switch(activePage){
+        case "dashboard":return renderDashboard();
+        case "newQuotation":return renderNewQuotation();
+        case "quotations":return renderQuotations();
+        case "customers":return renderCustomers();
+        case "salesTasks":return renderTasks();
+        case "incoming":return renderIncoming();
+        case "jobOrders":return renderJobOrders();
+        case "extraCosts":return renderExtraCosts();
+        case "sea":return renderShipping("Laut");
+        case "air":return renderShipping("Udara");
+        case "airBills":return renderAirBills();
+        case "invoices":return renderInvoices();
+        case "pettyCash":return renderPettyCash();
+        case "procurement":return renderProcurement();
+        case "monitoring":return renderMonitoring();
+        case "notifications":return renderNotifications();
+        case "archive":return renderArchive();
+        default:return renderDashboard()
+      }
+    }
+    function renderDashboard(){
+      const jobs=state.jobs.filter(j=>stageOwner[j.stage]===activeRole&&j.stage!=="done").sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
+      return `${pageHeader("Dashboard",`Ringkasan job yang memerlukan tindakan dari ${esc(activeRole)}.`,activeRole==="Sales / CS"?`<button class="btn primary" data-action="navigate" data-page="newQuotation">+ Quotation Baru</button>`:"")}<div class="stats">${stat("Total job",state.jobs.length,"Seluruh tahap proses")}${stat("Perlu tindakan",jobs.length,"Menunggu peran Anda")}${stat("Job selesai",state.jobs.filter(j=>j.stage==="done").length,"Invoice telah terkirim")}${stat("Belum dibaca",unreadCount(activeRole),"Notifikasi untuk akun ini")}</div><div class="panel"><div class="panel-head"><div><h2>Job menunggu tindakan</h2><p>Job terbaru pada tahap yang menjadi tanggung jawab Anda.</p></div></div>${jobTable(jobs)}</div>`;
+    }
+    function renderNewQuotation(){
+      return `${pageHeader("Quotation Baru","Buat job ekspedisi baru. Job Reguler langsung diteruskan ke Sales Support; Insidental menunggu persetujuan kustomer.")}<div class="panel"><div class="panel-head"><h2>Informasi quotation</h2></div><div class="panel-body"><form id="quotation-form"><div class="form-grid"><div class="field full"><label for="customer-name">Nama customer</label><input id="customer-name" name="customer" required placeholder="Masukkan nama perusahaan customer"></div><div class="field"><label for="route">Jalur pengiriman</label><select id="route" name="route"><option>Laut</option><option>Udara</option></select></div><div class="field"><label for="type">Tipe quotation</label><select id="type" name="type"><option>Reguler</option><option>Insidental</option></select></div><div class="field"><label for="amount">Harga dasar dari quotation (Rp)</label><input id="amount" name="amount" type="number" min="1" step="1000" value="3500000" required></div></div><div class="form-actions"><button class="btn primary" type="submit">Buat quotation</button></div></form></div></div>`;
+    }
+    function renderQuotations(){
+      return `${pageHeader("Daftar Quotation","Pantau seluruh quotation dan lanjutkan tindakan sesuai tahapnya.")}<div class="stats">${stat("Total quotation",state.jobs.length,"Quotation dan job")}${stat("Menunggu kustomer",state.jobs.filter(j=>j.stage==="waiting").length,"Perlu simulasi keputusan")}${stat("Perlu revisi",state.jobs.filter(j=>j.stage==="revision").length,"Menunggu revisi Sales")}${stat("Selesai",state.jobs.filter(j=>j.stage==="done").length,"Invoice terkirim")}</div><div class="panel"><div class="panel-head"><h2>Semua job</h2><div class="filter"><input id="quotation-search" placeholder="Cari nomor atau customer"></div></div><div id="quotation-table">${jobTable([...state.jobs].sort((a,b)=>b.createdAt.localeCompare(a.createdAt)))}</div></div>`;
+    }
+    function renderCustomers(){
+      const customers=[...new Map(state.jobs.filter(j=>["legal","jobOrder","extraCost","sea","air","invoice","done"].includes(j.stage)).map(j=>[j.customer,j])).values()];
+      return `${pageHeader("Pelanggan","Customer yang telah melewati cek legalitas dan berstatus customer.")}<div class="panel"><div class="panel-head"><h2>Daftar customer <span class="tag blue">${customers.length}</span></h2></div>${customers.length?`<div class="table-wrap"><table><thead><tr><th>Nama customer</th><th>Job terkait</th><th>Jalur terakhir</th><th>Status</th></tr></thead><tbody>${customers.map(c=>`<tr><td><strong>${esc(c.customer)}</strong></td><td>${jobLink(c)}</td><td>${routeTag(c.route)}</td><td><span class="tag green">Customer</span></td></tr>`).join("")}</tbody></table></div>`:`<div class="empty">Belum ada customer terverifikasi.</div>`}</div>`;
+    }
+    function renderTasks(){return `${pageHeader("Tugas Tambahan","Catat tindak lanjut customer. Setiap catatan menyimpan waktu input.")}<div class="panel"><div class="panel-head"><h2>Tambah tugas</h2></div><div class="panel-body"><form id="task-form" class="form-grid"><div class="field full"><label for="task-kind">Jenis tugas</label><select name="kind" id="task-kind"><option>Input data dan dokumen legal customer baru</option><option>Hubungi customer untuk konfirmasi atau negosiasi</option></select></div><div class="field full"><label for="task-description">Catatan tugas</label><textarea name="description" id="task-description" required placeholder="Tuliskan detail tindak lanjut"></textarea></div><div class="field full"><div class="form-actions" style="margin-top:0"><button class="btn primary">Simpan catatan</button></div></div></form></div></div><div class="panel"><div class="panel-head"><h2>Riwayat tugas tambahan</h2></div>${state.tasks.length?`<div class="table-wrap"><table><thead><tr><th>Tanggal dan jam</th><th>Jenis tugas</th><th>Catatan</th></tr></thead><tbody>${[...state.tasks].sort((a,b)=>b.at.localeCompare(a.at)).map(t=>`<tr><td>${dateFormat(t.at)}</td><td>${esc(t.kind)}</td><td>${esc(t.description)}</td></tr>`).join("")}</tbody></table></div>`:`<div class="empty">Belum ada catatan.</div>`}</div>`}
+    function renderIncoming(){
+      const jobs=state.jobs.filter(j=>j.stage==="waiting");
+      return `${pageHeader("Quotation Masuk","Simulasi kustomer: setujui quotation atau minta penyesuaian sebelum cek legalitas.")}<div class="notice">Menu ini hanya simulasi keputusan kustomer, bukan akun login kustomer.</div>${jobs.length?jobs.map(j=>`<div class="panel"><div class="panel-body task-item"><div class="task-copy"><strong>${jobLink(j)} · ${esc(j.customer)}</strong><p>${routeTag(j.route)} <span class="tag gray">${esc(j.type)}</span> · Dibuat ${dateFormat(j.createdAt)} · Harga ${money(j.baseAmount)}</p></div><div class="actions"><button class="btn success" data-action="customer-approve" data-id="${j.id}">Kustomer setuju</button><button class="btn warning" data-action="customer-revise" data-id="${j.id}">Kustomer minta penyesuaian</button></div></div></div>`).join(""):`<div class="panel"><div class="empty"><strong>Tidak ada quotation yang menunggu kustomer</strong>Quotation Insidental akan muncul di sini.</div></div>`}`;
+    }
+    function renderJobOrders(){const jobs=state.jobs.filter(j=>j.stage==="jobOrder");return `${pageHeader("Tugas Job Order","Terima quotation final dan terbitkan satu nomor job tunggal untuk setiap pengiriman.")}<div class="notice">Harga dasar terisi otomatis dari quotation. Nomor Job Number hanya diterbitkan satu kali dan tidak dapat diubah.</div><div class="panel"><div class="panel-head"><h2>Quotation final untuk diterbitkan</h2></div>${jobTable(jobs)}</div>`}
+    function renderExtraCosts(){const jobs=state.jobs.filter(j=>j.stage==="extraCost");return `${pageHeader("Biaya di Luar Penawaran","Tambahkan biaya yang disetujui pimpinan sebelum job dikembalikan ke Operasional.")}<div class="notice"><strong>Pengingat:</strong> input biaya hanya dilakukan setelah disetujui pimpinan. Nominal yang dicatat akan menambah rincian invoice.</div><div class="panel"><div class="panel-head"><h2>Job menunggu biaya tambahan</h2></div>${jobTable(jobs)}</div>`}
+    function renderShipping(route){const stage=route==="Laut"?"sea":"air",jobs=state.jobs.filter(j=>j.route===route&&j.stage===stage);    return `${pageHeader(`Pengiriman ${route}`,`Daftar job ${route.toLowerCase()} yang memerlukan pemeriksaan dokumen dan Incoterm.`)}<div class="panel"><div class="panel-head"><div><h2>Job pengiriman ${route.toLowerCase()}</h2><p>Jika ada biaya di luar penawaran, job akan diteruskan ke Sales Support.</p></div></div>${jobs.length?`<div class="table-wrap"><table><thead><tr><th>No. Job</th><th>Customer</th><th>Nomor Job</th><th>Dibuat</th><th>Aksi</th></tr></thead><tbody>${jobs.map(j=>`<tr><td>${jobLink(j)}</td><td><strong>${esc(j.customer)}</strong></td><td>${esc(j.jobNumber)}</td><td>${dateFormat(j.createdAt)}</td><td><div class="actions"><button class="btn warning small-btn" data-action="request-extra" data-id="${j.id}">Ada biaya di luar penawaran</button>${j.docsChecked?`<button class="btn success small-btn" data-action="complete-shipping" data-id="${j.id}">Selesaikan pekerjaan (Job Done)</button>`:`<button class="btn primary small-btn" data-action="check-docs" data-id="${j.id}">Cek dokumen dan Incoterm</button>`}${repairButton(j)}</div></td></tr>`).join("")}</tbody></table></div>`:`<div class="empty"><strong>Tidak ada job ${route.toLowerCase()} pada tahap pengiriman</strong>Job yang diterbitkan Sales Support akan muncul di sini.</div>`}</div>`}
+    function renderAirBills(){const jobs=state.jobs.filter(j=>j.route==="Udara"&&["invoice","done"].includes(j.stage));return `${pageHeader("Data Tagihan Udara","Pantau job udara yang sudah memasuki proses tagihan atau telah selesai.")}<div class="panel"><div class="panel-head"><h2>Tagihan pengiriman udara</h2></div>${jobs.length?`<div class="table-wrap"><table><thead><tr><th>No. Job</th><th>Customer</th><th>Nomor Job</th><th>Total tagihan</th><th>Status</th></tr></thead><tbody>${jobs.map(j=>`<tr><td>${jobLink(j)}</td><td>${esc(j.customer)}</td><td>${esc(j.jobNumber)}</td><td>${money(invoiceTotal(j))}</td><td>${statusTag(j)}</td></tr>`).join("")}</tbody></table></div>`:`<div class="empty">Belum ada job udara pada tahap tagihan.</div>`}</div>`}
+    function invoiceTotal(j){return j.baseAmount+j.extraCosts.reduce((sum,c)=>sum+c.amount,0)}
+    function renderInvoices(){const jobs=state.jobs.filter(j=>j.stage==="invoice");return `${pageHeader("Tagihan","Buat invoice dari rincian sistem. Nominal invoice dikunci dan tidak dapat diubah.")}<div class="notice">Customer lama mendapat kredit maksimal 3 minggu. Customer baru menggunakan pembayaran COD.</div><div class="panel"><div class="panel-head"><h2>Job Done menunggu invoice</h2></div>${jobs.length?`<div class="table-wrap"><table><thead><tr><th>No. Job</th><th>Customer</th><th>Customer</th><th>Jalur</th><th>Total sistem</th><th>Status invoice</th><th>Aksi</th></tr></thead><tbody>${jobs.map(j=>`<tr><td>${jobLink(j)}</td><td>${esc(j.customer)}</td><td><select class="customer-type" data-id="${j.id}" aria-label="Customer lama atau baru"><option value="Lama" ${j.customerType==="Lama"?"selected":""}>Lama</option><option value="Baru" ${j.customerType==="Baru"?"selected":""}>Baru</option></select></td><td>${routeTag(j.route)}</td><td><strong>${money(invoiceTotal(j))}</strong></td><td>${j.invoiceCreated?`<span class="tag green">Invoice dibuat</span>`:`<span class="tag amber">Belum dibuat</span>`}</td><td><div class="actions">${j.invoiceCreated?`<button class="btn success small-btn" data-action="send-invoice" data-id="${j.id}">Kirim invoice</button>`:`<button class="btn primary small-btn" data-action="create-invoice" data-id="${j.id}">Buat invoice</button>`}${repairButton(j)}</div></td></tr>`).join("")}</tbody></table></div>`:`<div class="empty"><strong>Belum ada job Done untuk ditagihkan</strong>Job selesai dari Operasional akan muncul di sini.</div>`}</div>`}
+    function renderPettyCash(){return `${pageHeader("Petty Cash","Catat kas kecil beserta nominal dan waktu pencatatan.")}<div class="panel"><div class="panel-head"><h2>Tambah catatan kas kecil</h2></div><div class="panel-body"><form id="cash-form" class="form-grid"><div class="field"><label for="cash-description">Keterangan</label><input id="cash-description" name="description" required placeholder="Contoh: biaya kurir dokumen"></div><div class="field"><label for="cash-amount">Nominal (Rp)</label><input id="cash-amount" name="amount" type="number" min="1" step="1000" required></div><div class="field full"><div class="form-actions" style="margin-top:0"><button class="btn primary">Tambah catatan</button></div></div></form></div></div><div class="panel"><div class="panel-head"><h2>Riwayat petty cash</h2></div>${state.pettyCash.length?`<div class="table-wrap"><table><thead><tr><th>Tanggal dan jam</th><th>Keterangan</th><th>Nominal</th></tr></thead><tbody>${[...state.pettyCash].sort((a,b)=>b.at.localeCompare(a.at)).map(x=>`<tr><td>${dateFormat(x.at)}</td><td>${esc(x.description)}</td><td>${money(x.amount)}</td></tr>`).join("")}</tbody></table></div>`:`<div class="empty">Belum ada catatan kas kecil.</div>`}</div>`}
+    function renderProcurement(){return `${pageHeader("Pengadaan","Ajukan kebutuhan dan perbarui status permintaan pengadaan.")}<div class="panel"><div class="panel-head"><h2>Ajukan pengadaan</h2></div><div class="panel-body"><form id="procurement-form" class="form-grid"><div class="field full"><label for="procurement-need">Kebutuhan</label><input id="procurement-need" name="description" required placeholder="Tuliskan barang atau kebutuhan"></div><div class="field full"><div class="form-actions" style="margin-top:0"><button class="btn primary">Ajukan permintaan</button></div></div></form></div></div><div class="panel"><div class="panel-head"><h2>Daftar permintaan</h2></div>${state.procurement.length?`<div class="table-wrap"><table><thead><tr><th>Tanggal dan jam</th><th>Kebutuhan</th><th>Status</th><th>Aksi</th></tr></thead><tbody>${[...state.procurement].sort((a,b)=>b.at.localeCompare(a.at)).map(x=>`<tr><td>${dateFormat(x.at)}</td><td>${esc(x.description)}</td><td><span class="tag ${x.status==="Disetujui"?"green":x.status==="Ditolak"?"red":"amber"}">${esc(x.status)}</span></td><td><select class="procurement-status" data-id="${x.id}" aria-label="Status pengadaan"><option ${x.status==="Diajukan"?"selected":""}>Diajukan</option><option ${x.status==="Disetujui"?"selected":""}>Disetujui</option><option ${x.status==="Ditolak"?"selected":""}>Ditolak</option></select></td></tr>`).join("")}</tbody></table></div>`:`<div class="empty">Belum ada permintaan pengadaan.</div>`}</div>`}
+    function renderMonitoring(){return `${pageHeader("Pemantauan Data","Ringkasan seluruh job. Manager hanya membaca tahap dan dapat mengirim temuan kepada pemilik job.")}<div class="notice">Tombol kesesuaian hanya mencatat hasil pemantauan; Manager tidak dapat mengubah tahap job.</div><div class="stats">${stat("Total job",state.jobs.length,"Semua proses")}${stat("Berjalan",state.jobs.filter(j=>j.stage!=="done").length,"Belum selesai")}${stat("Perlu perbaikan",state.jobs.filter(j=>j.status==="Perlu perbaikan").length,"Temuan operasional")}${stat("Selesai",state.jobs.filter(j=>j.stage==="done").length,"Invoice terkirim")}</div><div class="panel"><div class="panel-head"><h2>Ringkasan seluruh job</h2></div><div class="table-wrap"><table><thead><tr><th>No. Job</th><th>Customer</th><th>Jalur</th><th>Tipe</th><th>Tahap</th><th>Dibuat</th><th>Pemantauan</th></tr></thead><tbody>${[...state.jobs].sort((a,b)=>b.createdAt.localeCompare(a.createdAt)).map(j=>`<tr><td>${jobLink(j)}</td><td>${esc(j.customer)}</td><td>${routeTag(j.route)}</td><td>${esc(j.type)}</td><td>${statusTag(j)}</td><td>${dateFormat(j.createdAt)}</td><td><div class="actions"><button class="btn success small-btn" data-action="data-ok" data-id="${j.id}">Data sesuai</button><button class="btn warning small-btn" data-action="data-issue" data-id="${j.id}">Tidak sesuai</button></div></td></tr>`).join("")}</tbody></table></div></div>`}
+    function renderNotifications(){const notes=state.notifications.filter(n=>n.role===activeRole).sort((a,b)=>b.at.localeCompare(a.at));return `${pageHeader("Notifikasi",`Notifikasi hanya ditampilkan untuk akun ${esc(activeRole)}. Saat halaman dibuka, notifikasi otomatis ditandai terbaca.`)}<div class="panel"><div class="panel-head"><h2>Daftar notifikasi <span class="tag blue">${notes.length}</span></h2><span class="muted small">Belum dibaca: ${notes.filter(n=>!n.read).length}</span></div><div class="panel-body"><div class="task-list">${notes.length?notes.map(n=>`<div class="notification-item ${n.read?"":"unread"}"><div class="notification-copy"><strong>${n.jobId&&getJob(n.jobId)?`${jobLink(getJob(n.jobId))} · `:""}${esc(n.message)}</strong><p>${dateFormat(n.at)}</p></div><span class="tag ${n.read?"gray":"blue"}">${n.read?"Terbaca":"Belum dibaca"}</span></div>`).join(""):`<div class="empty">Belum ada notifikasi untuk akun ini.</div>`}</div></div></div>`}
+    function renderArchive(){return `${pageHeader("Arsip","Cari job berdasarkan rentang tanggal, nomor job/customer, dan status.")}<div class="panel"><div class="panel-body"><div class="filters"><div class="filter"><label for="archive-from">Tanggal dibuat dari</label><input type="date" id="archive-from"></div><div class="filter"><label for="archive-to">Tanggal dibuat sampai</label><input type="date" id="archive-to"></div><div class="filter"><label for="archive-search">Pencarian</label><input id="archive-search" placeholder="Nomor job atau customer"></div><div class="filter"><label for="archive-status">Status</label><select id="archive-status"><option>Selesai saja</option><option>Semua</option></select></div><button class="btn primary" data-action="filter-archive">Terapkan filter</button><button class="btn" data-action="clear-archive">Bersihkan</button></div></div></div><div class="panel"><div class="panel-head"><h2>Data arsip</h2><span class="muted small" id="archive-count"></span></div><div id="archive-results"></div></div>`}
+    function archiveRows(){const from=document.getElementById("archive-from")?.value||"",to=document.getElementById("archive-to")?.value||"",search=(document.getElementById("archive-search")?.value||"").trim().toLowerCase(),all=document.getElementById("archive-status")?.value==="Semua";return state.jobs.filter(j=>(all||j.stage==="done")&&(!from||dateInput(j.createdAt)>=from)&&(!to||dateInput(j.createdAt)<=to)&&(!search||j.qn.toLowerCase().includes(search)||j.jobNumber.toLowerCase().includes(search)||j.customer.toLowerCase().includes(search))).sort((a,b)=>b.createdAt.localeCompare(a.createdAt))}
+    function updateArchive(){const dest=document.getElementById("archive-results");if(!dest)return;const jobs=archiveRows();document.getElementById("archive-count").textContent=`${jobs.length} job`;dest.innerHTML=jobs.length?`<div class="table-wrap"><table><thead><tr><th>No. Job</th><th>Customer</th><th>Jalur</th><th>Dibuat</th><th>Selesai</th><th>Status</th></tr></thead><tbody>${jobs.map(j=>`<tr><td>${jobLink(j)}</td><td>${esc(j.customer)}</td><td>${routeTag(j.route)}</td><td>${dateFormat(j.createdAt)}</td><td>${j.stage==="done"?dateFormat(j.history.find(h=>h.text.includes("invoice terkirim"))?.at||j.history[0].at):"—"}</td><td>${statusTag(j)}</td></tr>`).join("")}</tbody></table></div>`:`<div class="empty">Tidak ada job yang sesuai filter.</div>`}
+    function renderDetail(j){
+      if(!j)return `${pageHeader("Job tidak ditemukan","Data job ini tidak tersedia.")}<button class="btn" data-action="back">Kembali</button>`;
+      const activeIndex=workStages.indexOf(j.stage);
+      const stages=workStages.map((s,i)=>`<div class="stage-row ${i<activeIndex||j.stage==="done"&&i===activeIndex?"done":i===activeIndex?"current":""}"><span class="stage-dot"></span><span>${stageLabel[s]}${s==="sea"||s==="air"?` (${s==="sea"?"Laut":"Udara"})`:""}</span></div>`).join("");
+      return `${pageHeader(`Detail ${esc(j.qn)}`,`${esc(j.customer)} · ${esc(j.route)} · ${esc(j.type)}`,`<button class="btn" data-action="back">Kembali</button>`)}<div class="detail-grid"><div class="detail-card"><h3>Informasi job</h3><div class="detail-row"><span>No. quotation</span><strong>${esc(j.qn)}</strong></div><div class="detail-row"><span>Nomor job tunggal</span><strong>${j.jobNumber?esc(j.jobNumber):"Belum diterbitkan"}</strong></div><div class="detail-row"><span>Customer</span><strong>${esc(j.customer)}</strong></div><div class="detail-row"><span>Jalur / tipe</span><strong>${esc(j.route)} / ${esc(j.type)}</strong></div><div class="detail-row"><span>Tahap saat ini</span><strong>${statusTag(j)}</strong></div><div class="detail-row"><span>Tanggal dibuat</span><strong>${dateFormat(j.createdAt)}</strong></div><div class="detail-row"><span>Harga dasar quotation</span><strong>${money(j.baseAmount)}</strong></div></div><div class="detail-card"><h3>Tahapan proses</h3><div class="stages">${stages}</div></div></div><div class="panel" style="margin-top:15px"><div class="panel-head"><h2>Biaya di luar penawaran</h2><strong>${money(j.extraCosts.reduce((n,x)=>n+x.amount,0))}</strong></div>${j.extraCosts.length?`<div class="table-wrap"><table><thead><tr><th>Keterangan</th><th>Nominal</th><th>Tanggal input</th></tr></thead><tbody>${j.extraCosts.map(c=>`<tr><td>${esc(c.description)}</td><td>${money(c.amount)}</td><td>${dateFormat(c.at)}</td></tr>`).join("")}</tbody></table></div>`:`<div class="empty">Belum ada biaya tambahan.</div>`}</div>${j.stage==="invoice"||j.stage==="done"?`<div class="invoice-total"><span>Total invoice sistem</span><span>${money(invoiceTotal(j))} · Customer ${esc(j.customerType)}${j.customerType==="Lama"?" (kredit maks. 3 minggu)":" (COD)"}</span></div>`:""}<div class="panel" style="margin-top:15px"><div class="panel-head"><h2>Riwayat job</h2><span class="muted small">${j.history.length} aktivitas</span></div><div class="panel-body"><div class="timeline">${j.history.map(h=>`<div class="history-item"><strong>${esc(h.text)}</strong><p>${esc(j.customer)} · ${esc(j.qn)}</p><time>${dateFormat(h.at)}</time></div>`).join("")}</div></div></div>`;
+    }
+    function openModal(title,body,onSubmit){
+      modalSubmit=onSubmit;
+      document.getElementById("modal-root").innerHTML=`<div class="modal-backdrop" data-action="close-modal"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><div class="modal-head"><h2 id="modal-title">${title}</h2><button class="modal-close" data-action="close-modal" aria-label="Tutup">×</button></div><div class="modal-body">${body}</div></div></div>`;
+    }
+    function closeModal(){document.getElementById("modal-root").innerHTML="";modalSubmit=null}
+    function toast(message){clearTimeout(toastTimer);document.querySelector(".toast")?.remove();const el=document.createElement("div");el.className="toast";el.textContent=message;document.body.appendChild(el);toastTimer=setTimeout(()=>el.remove(),3100)}
+    function move(job,newStage,message,notifyMessage){
+      job.stage=newStage;job.status="Berjalan";job.repairNote="";log(job,message);notify(stageOwner[newStage],job,notifyMessage||`${job.qn} — ${message}`);persist();detailId=null;render();toast(message)
+    }
+    function render(){shell();if(activePage==="notifications"){state.notifications.filter(n=>n.role===activeRole).forEach(n=>n.read=true);const badge=document.querySelector(".nav button[data-page='notifications'] .badge");if(badge)badge.remove();}}
+    function showRepair(job){
+      const previous={jobOrder:job.type==="Reguler"?"quotation":"legal",sea:"jobOrder",air:"jobOrder",extraCost:job.route==="Laut"?"sea":"air",invoice:job.route==="Laut"?"sea":"air"};
+      const target=previous[job.stage];
+      if(!target){toast("Tahap ini tidak dapat dikembalikan melalui alur perbaikan.");return}
+      const targetOwner=stageOwner[target];
+      openModal("Kembalikan untuk perbaikan",`<form id="repair-form"><div class="notice">Job akan kembali ke tahap <strong>${stageLabel[target]}</strong> dan hanya mengirim notifikasi kepada <strong>${esc(targetOwner)}</strong>.</div><div class="field"><label for="repair-note">Catatan kesalahan</label><textarea id="repair-note" name="note" required placeholder="Jelaskan bagian yang perlu diperbaiki"></textarea></div><div class="form-actions"><button type="button" class="btn" data-action="close-modal">Batal</button><button class="btn danger">Kembalikan job</button></div></form>`,form=>{
+        job.stage=target;job.status="Perlu perbaikan";job.repairNote=form.get("note").trim();log(job,`Dikembalikan untuk perbaikan: ${job.repairNote}`);notify(targetOwner,job,`${job.qn} — Perlu perbaikan: ${job.repairNote}`);closeModal();detailId=null;render();toast("Job dikembalikan dan notifikasi dikirim kepada "+targetOwner)
+      });
+    }
+    function render(){
+      if(!activeRole){document.getElementById("app").innerHTML=renderLogin();return}
+      shell();
+      if(activePage==="notifications"){
+        state.notifications.filter(n=>n.role===activeRole).forEach(n=>n.read=true);
+        document.querySelectorAll(".nav button[data-page='notifications'] .badge").forEach(x=>x.remove());
+      }
+      if(activePage==="archive")updateArchive();
+    }
+    document.addEventListener("change",e=>{
+      if(e.target.classList.contains("customer-type")){const j=getJob(e.target.dataset.id);if(j)j.customerType=e.target.value}
+      if(e.target.classList.contains("procurement-status")){const item=state.procurement.find(x=>x.id===Number(e.target.dataset.id));if(item){item.status=e.target.value;toast("Status pengadaan diperbarui")}}
+    });
+    document.addEventListener("input",e=>{
+      if(e.target.id==="quotation-search"){const query=e.target.value.toLowerCase();const jobs=state.jobs.filter(j=>`${j.qn} ${j.jobNumber} ${j.customer}`.toLowerCase().includes(query)).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));const table=document.getElementById("quotation-table");if(table)table.innerHTML=jobTable(jobs)}
+      if(["archive-search","archive-from","archive-to","archive-status"].includes(e.target.id))updateArchive();
+    });
+    document.addEventListener("click",e=>{
+      const target=e.target.closest("[data-action]");if(!target)return;
+      const action=target.dataset.action,id=target.dataset.id,job=id?getJob(id):null;
+      if(action==="logout"){activeRole=null;activePage="dashboard";detailId=null;closeModal();render();return}
+      if(action==="toggle-pass"){const input=document.getElementById("passcode-login");if(input){const reveal=input.type==="password";input.type=reveal?"text":"password";target.textContent=reveal?"Sembunyi":"Lihat";target.setAttribute("aria-label",reveal?"Sembunyikan passcode":"Tampilkan passcode")}return}
+      if(action==="forgot-access"){openModal("Bantuan akses","<p>Ini adalah mode simulasi presentasi. Passcode tidak diperlukan. Pilih salah satu role kantor pada daftar, lalu masuk.</p><div class=\"form-actions\"><button class=\"btn primary\" data-action=\"close-modal\">Mengerti</button></div>");return}
+      if(action==="close-modal"){closeModal();return}
+      if(action==="menu"){document.getElementById("sidebar").classList.toggle("open");return}
+      if(action==="navigate"){activePage=target.dataset.page;detailId=null;render();document.getElementById("sidebar").classList.remove("open");return}
+      if(action==="detail"){detailId=Number(id);render();return}
+      if(action==="back"){detailId=null;render();return}
+      if(action==="reset"){openModal("Reset data contoh",`<p>Seluruh perubahan simulasi akan dihapus dan data contoh akan dipulihkan.</p><div class="form-actions"><button class="btn" data-action="close-modal">Batal</button><button class="btn danger" data-action="confirm-reset">Reset data</button></div>`);return}
+      if(action==="confirm-reset"){state=seedData();detailId=null;activePage=menuByRole[activeRole][0][1];closeModal();render();toast("Data contoh berhasil dipulihkan");return}
+      if(action==="filter-archive"){updateArchive();return}
+      if(action==="clear-archive"){["archive-from","archive-to","archive-search"].forEach(x=>{const el=document.getElementById(x);if(el)el.value=""});document.getElementById("archive-status").value="Selesai saja";updateArchive();return}
+      if(!job&&["verify-quotation","resend","legal","customer-approve","customer-revise","issue-number","save-extra","request-extra","complete-shipping","create-invoice","send-invoice","repair","data-ok","data-issue"].includes(action))return;
+      if(action==="verify-quotation"){if(job.type==="Reguler")move(job,"jobOrder","Quotation Reguler diteruskan ke Sales Support.","Quotation final "+job.qn+" diterima. Terbitkan Job Number.");else move(job,"waiting","Quotation Insidental diverifikasi dan dikirim ke kustomer.","Quotation "+job.qn+" menunggu keputusan kustomer.");return}
+      if(action==="resend"){move(job,"waiting","Revisi quotation dikirim ulang ke kustomer.","Quotation revisi "+job.qn+" menunggu keputusan kustomer.");return}
+      if(action==="customer-approve"){move(job,"legal","Kustomer menyetujui quotation.","Kustomer menyetujui "+job.qn+". Cek legalitas PT.");return}
+      if(action==="customer-revise"){job.stage="revision";job.status="Berjalan";log(job,"Kustomer meminta penyesuaian quotation.");notify("Sales / CS",job,`${job.qn} — Kustomer meminta penyesuaian quotation.`);render();toast("Permintaan penyesuaian diteruskan ke Sales / CS");return}
+      if(action==="legal"){move(job,"jobOrder","Legalitas PT diperiksa; customer terverifikasi.","Customer terverifikasi. Terima quotation final "+job.qn+" dan terbitkan Job Number.");return}
+      if(action==="issue-number"){if(job.jobNumber){move(job,job.route==="Laut"?"sea":"air",`Perbaikan Job Order selesai; job ${job.jobNumber} diteruskan kembali ke Operasional.`,`Job ${job.qn} yang diperbaiki siap diproses pada Pengiriman ${job.route}.`);return}job.jobNumber=`JO-${String(job.id).padStart(3,"0")}`;const next=job.route==="Laut"?"sea":"air";move(job,next,`Job Number ${job.jobNumber} diterbitkan; harga dasar terisi otomatis dari quotation.`,`Job ${job.qn} siap diproses pada Pengiriman ${job.route}.`);return}
+      if(action==="request-extra"){job.returnStage=job.stage;move(job,"extraCost","Operasional melaporkan biaya di luar penawaran.","Job "+job.qn+" memerlukan input biaya tambahan yang telah disetujui pimpinan.");return}
+      if(action==="save-extra"){openModal("Input biaya di luar penawaran",`<div class="notice">Pastikan biaya tambahan sudah disetujui pimpinan. Harga dasar quotation: <strong>${money(job.baseAmount)}</strong></div><form id="extra-form" class="form-grid"><div class="field full"><label for="extra-description">Keterangan biaya</label><input id="extra-description" name="description" required placeholder="Keterangan biaya tambahan"></div><div class="field full"><label for="extra-amount">Nominal (Rp)</label><input id="extra-amount" name="amount" type="number" min="1" step="1000" required></div><div class="field full"><div class="form-actions"><button type="button" class="btn" data-action="close-modal">Batal</button><button class="btn primary">Simpan biaya dan kembalikan ke Operasional</button></div></div></form>`,form=>{const amount=Number(form.get("amount"));if(!Number.isFinite(amount)||amount<=0){toast("Masukkan nominal lebih dari nol.");return}job.extraCosts.push({description:form.get("description").trim(),amount,at:nowIso()});const next=job.returnStage||(job.route==="Laut"?"sea":"air");move(job,next,"Biaya tambahan dicatat dan job dikembalikan ke Operasional.",`Biaya tambahan ${job.qn} telah diinput. Lanjutkan pengiriman.`);closeModal()});return}
+      if(action==="check-docs"){job.docsChecked=true;log(job,"Dokumen dan Incoterm diperiksa oleh Operasional.");render();toast("Pemeriksaan dokumen dan Incoterm tercatat. Job siap diselesaikan.");return}
+      if(action==="complete-shipping"){if(!job.docsChecked){toast("Periksa dokumen dan Incoterm terlebih dahulu.");return}move(job,"invoice","Pekerjaan diselesaikan (Job Done) setelah pemeriksaan dokumen dan Incoterm.","Job Done "+job.qn+" diterima. Buat invoice sesuai rincian sistem.");return}
+      if(action==="create-invoice"){job.invoiceCreated=true;job.customerType=document.querySelector(`.customer-type[data-id="${id}"]`)?.value||job.customerType;log(job,`Invoice dibuat sesuai rincian sistem (${money(invoiceTotal(job))}); nominal dikunci. Customer ${job.customerType==="Lama"?"lama, kredit maksimal 3 minggu":"baru, COD"}.`);render();toast("Invoice dibuat dari rincian sistem; nominal tidak dapat diubah");return}
+      if(action==="send-invoice"){if(!job.invoiceCreated){toast("Buat invoice terlebih dahulu.");return}job.stage="done";job.status="Selesai";log(job,"Invoice dikirim kepada kustomer.");render();toast("Invoice terkirim. Job berstatus Selesai.");return}
+      if(action==="repair"){showRepair(job);return}
+      if(action==="data-ok"){log(job,"Manager menandai data sesuai.");render();toast("Hasil pemantauan dicatat.");return}
+      if(action==="data-issue"){openModal("Catat temuan pemantauan",`<p class="helper">Temuan dikirim sebagai notifikasi kepada pemilik tahap: <strong>${esc(stageOwner[job.stage])}</strong>. Tahap job tidak berubah.</p><form id="issue-form"><div class="field"><label for="issue-note">Catatan temuan</label><textarea name="note" id="issue-note" required placeholder="Tuliskan data yang tidak sesuai"></textarea></div><div class="form-actions"><button type="button" class="btn" data-action="close-modal">Batal</button><button class="btn warning">Kirim temuan</button></div></form>`,form=>{const note=form.get("note").trim();log(job,`Temuan Manager: ${note}`);notify(stageOwner[job.stage],job,`${job.qn} — Temuan Manager: ${note}`);closeModal();render();toast("Temuan dikirim kepada "+stageOwner[job.stage])});return}
+    });
+    document.addEventListener("submit",e=>{
+      e.preventDefault();const form=e.target,fd=new FormData(form);
+      if(form.id==="login-form"){
+        const role=String(fd.get("role")||"");
+        if(!roles.includes(role)){toast("Pilih role kantor yang tersedia.");return}
+        rememberedRole=document.getElementById("remember-role")?.checked?role:null;
+        activeRole=role;activePage=menuByRole[role][0][1];detailId=null;render();return
+      }
+      if(form.id==="quotation-form"){
+        const customer=String(fd.get("customer")).trim(),amount=Number(fd.get("amount"));if(!customer||!Number.isFinite(amount)||amount<=0){toast("Lengkapi nama customer dan harga dasar yang valid.");return}
+        const id=state.nextId++,type=String(fd.get("type")),created=nowIso(),job={id,qn:`QN-${String(id).padStart(3,"0")}`,jobNumber:"",customer,route:String(fd.get("route")),type,stage:type==="Reguler"?"jobOrder":"quotation",status:"Berjalan",createdAt:created,baseAmount:amount,customerType:"Baru",extraCosts:[],history:[{text:"Quotation dibuat oleh Sales / CS.",at:created}],invoiceCreated:false,repairNote:""};
+        if(type==="Reguler"){job.history.unshift({text:"Quotation Reguler langsung diteruskan ke Sales Support.",at:nowIso()});notify("Sales Support",job,`Quotation final ${job.qn} diterima. Terbitkan Job Number.`)}else notify("Sales / CS",job,`${job.qn} — Verifikasi dan kirim quotation Insidental kepada kustomer.`);
+        state.jobs.unshift(job);activePage="quotations";render();toast(`${job.qn} berhasil dibuat.`);return
+      }
+      if(form.id==="task-form"){state.tasks.unshift({id:state.nextTask++,kind:String(fd.get("kind")),description:String(fd.get("description")).trim(),at:nowIso()});render();toast("Catatan tugas tersimpan dengan tanggal dan jam.");return}
+      if(form.id==="cash-form"){const amount=Number(fd.get("amount"));if(!Number.isFinite(amount)||amount<=0){toast("Nominal harus lebih dari nol.");return}state.pettyCash.unshift({id:state.nextCash++,description:String(fd.get("description")).trim(),amount,at:nowIso()});render();toast("Catatan petty cash ditambahkan.");return}
+      if(form.id==="procurement-form"){state.procurement.unshift({id:state.nextProcurement++,description:String(fd.get("description")).trim(),status:"Diajukan",at:nowIso()});render();toast("Permintaan pengadaan diajukan.");return}
+      if(["repair-form","extra-form","shipping-form","issue-form"].includes(form.id)&&modalSubmit){modalSubmit(fd)}
+    });
+    state=seedData();render();
+  })();
+  </script>
+</body>
+</html>
