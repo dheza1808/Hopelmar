@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { useAuth } from './context/AuthContext';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { Login } from './pages/Login';
 import { DashboardLayout } from './components/layout/DashboardLayout';
+import { ProtectedRoute, defaultRoutes } from './components/ProtectedRoute';
 
 // Pages
 import { SalesDashboard } from './pages/sales/SalesDashboard';
@@ -11,12 +13,21 @@ import { JobList } from './pages/sales/JobList';
 import { QuotationList } from './pages/sales/QuotationList';
 
 export const AppContent: React.FC = () => {
-  const { user, customers, selectedCustomerId, setSelectedCustomerId } = useAuth();
+  const { user, loading, authError, customers, selectedCustomerId, setSelectedCustomerId } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isCreateJobOpen, setIsCreateJobOpen] = useState(false);
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center font-mono text-xs text-slate-500 bg-slate-50">
+        Memeriksa sesi Supabase...
+      </div>
+    );
+  }
+
+  // Jika tidak ada user sah dari Supabase, redirect tegas ke /login
   if (!user) {
-    return <Login />;
+    return <Navigate to="/login" replace />;
   }
 
   const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
@@ -59,7 +70,7 @@ export const AppContent: React.FC = () => {
             <CustomerDetail
               customerId={selectedCustomerId}
               onBackToList={() => setSelectedCustomerId(null)}
-              onCreateJobForCustomer={(cId) => {
+              onCreateJobForCustomer={() => {
                 setActiveTab('jobs');
                 setIsCreateJobOpen(true);
               }}
@@ -103,11 +114,84 @@ export const AppContent: React.FC = () => {
         setSelectedCustomerId(null);
       }}
     >
+      {authError && (
+        <p role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-700">
+          {authError}
+        </p>
+      )}
       {renderContent()}
     </DashboardLayout>
   );
 };
 
+const RoleRedirect: React.FC = () => {
+  const { user, role, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center font-mono text-xs text-slate-500 bg-slate-50">
+        Memeriksa sesi pengguna...
+      </div>
+    );
+  }
+
+  if (!user || !role) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <Navigate to={defaultRoutes[role]} replace />;
+};
+
+const LoginRoute: React.FC = () => {
+  const { user, role, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center font-mono text-xs text-slate-500 bg-slate-50">
+        Memeriksa sesi pengguna...
+      </div>
+    );
+  }
+
+  if (user && role) {
+    return <Navigate to={defaultRoutes[role]} replace />;
+  }
+
+  return <Login />;
+};
+
 export default function App() {
-  return <AppContent />;
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={<LoginRoute />} />
+          <Route path="/" element={<RoleRedirect />} />
+
+          <Route element={<ProtectedRoute allowedRoles={['sales_marketing']} />}>
+            <Route path="/sales-marketing" element={<AppContent />} />
+          </Route>
+
+          {/* Halaman Sales Support diizinkan untuk Sales Support DAN Sales & Marketing */}
+          <Route element={<ProtectedRoute allowedRoles={['sales_support', 'sales_marketing']} />}>
+            <Route path="/sales-support" element={<div className="p-8 font-semibold">Dashboard Sales Support (Terbitkan Job Number &amp; Auto-fill)</div>} />
+          </Route>
+
+          <Route element={<ProtectedRoute allowedRoles={['exim']} />}>
+            <Route path="/exim" element={<div className="p-8 font-semibold">Dashboard Exim (Dokumen Incoterm &amp; Eksekusi Pengiriman)</div>} />
+          </Route>
+
+          <Route element={<ProtectedRoute allowedRoles={['admin_invoice']} />}>
+            <Route path="/admin-invoice" element={<div className="p-8 font-semibold">Dashboard Admin Invoice + Pengadaan (Buat &amp; Kirim Invoice)</div>} />
+          </Route>
+
+          <Route element={<ProtectedRoute allowedRoles={['accounting']} />}>
+            <Route path="/accounting" element={<div className="p-8 font-semibold">Dashboard Accounting (Report Margin &amp; PNL)</div>} />
+          </Route>
+
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </AuthProvider>
+    </BrowserRouter>
+  );
 }

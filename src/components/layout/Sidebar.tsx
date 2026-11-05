@@ -15,7 +15,7 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
-  const { logout, setSelectedCustomerId } = useAuth();
+  const { logout, role, setSelectedCustomerId } = useAuth();
 
   const handleNavClick = (tab: string) => {
     setActiveTab(tab);
@@ -53,7 +53,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
         <div className="p-2.5 bg-slate-50/70 border border-slate-200/80 rounded-xl flex items-center justify-between">
           <div>
             <div className="text-[9px] font-medium text-slate-400 uppercase tracking-wide">Active Perspective</div>
-            <div className="text-xs font-bold text-slate-800">Role: Sales</div>
+            <div className="text-xs font-bold text-slate-800">
+              Role: {role?.replace('_', ' ') || 'Unknown'}
+            </div>
           </div>
           <button 
             title="Switch Perspective"

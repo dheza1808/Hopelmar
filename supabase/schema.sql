@@ -206,6 +206,10 @@ ALTER TABLE public.job_costs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.invoices ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
 
+CREATE POLICY "Users can view own profile"
+  ON public.profiles FOR SELECT TO authenticated
+  USING (id = auth.uid());
+
 -- Read policy for authenticated users across operational tables
 CREATE POLICY "Authenticated users can view operational data"
   ON public.customers FOR SELECT TO authenticated USING (true);

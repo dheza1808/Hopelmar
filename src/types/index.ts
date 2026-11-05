@@ -1,9 +1,9 @@
 export type UserRole = 
-  | 'sales' 
+  | 'sales_marketing' 
   | 'sales_support' 
-  | 'customer_service' 
-  | 'finance' 
-  | 'manager';
+  | 'exim' 
+  | 'admin_invoice' 
+  | 'accounting';
 
 export interface UserProfile {
   id: string;
