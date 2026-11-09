@@ -50,6 +50,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Right User & Actions */}
       <div className="flex items-center gap-3">
+<<<<<<< HEAD
         {onNewQuotation && (
           <button
             onClick={onNewQuotation}
@@ -59,6 +60,15 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span>New Quotation</span>
           </button>
         )}
+=======
+        <button
+          onClick={onNewQuotation}
+          className="px-3 py-1.5 rounded-lg bg-[#b91c1c] hover:bg-[#991b1b] text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition cursor-pointer"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          <span>New Quotation</span>
+        </button>
+>>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
 
         <div className="h-4 w-px bg-slate-200 mx-1 hidden sm:block"></div>
 

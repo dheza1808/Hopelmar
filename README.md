@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Hopelmar Job Tracker
 
 ## Menjalankan aplikasi
@@ -53,3 +54,7 @@ Login menggunakan username yang disimpan pada `profiles.username`; pencarian use
 Username login tidak membedakan huruf besar/kecil. Password tetap password akun Supabase Auth yang sudah digunakan.
 
 > Catatan implementasi: selain dokumen yang diunggah, data operasional workflow masih disimpan di `localStorage` browser. Data belum tersinkron antar pengguna/perangkat atau ditulis ke tabel Supabase; integrasi CRUD Supabase dibutuhkan sebelum dipakai sebagai sistem produksi multi-role.
+=======
+# Hopelmar
+Projek_KP
+>>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe

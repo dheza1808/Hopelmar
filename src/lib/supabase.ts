@@ -201,7 +201,11 @@ export const initialAssignedJobs: AssignedJob[] = [
     mode: 'Sea LCL (18 CBM)',
     etdEta: '12 Oct / 22 Oct',
     date: '12 Oct 2025',
+<<<<<<< HEAD
     currentStatus: 'Exim',
+=======
+    currentStatus: 'Operational',
+>>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
     quotationStatus: 'Waiting Confirmation',
     runningDays: '12 Days',
     assignedPic: 'Andi Pratama'

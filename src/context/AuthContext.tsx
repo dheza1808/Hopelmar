@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { createContext, Dispatch, SetStateAction, useContext, useEffect, useState } from 'react';
 import {
   AssignedJob,
@@ -20,6 +21,10 @@ import {
   UserProfile,
   UserRole,
 } from '../types';
+=======
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { AssignedJob, CustomerAccount, UserProfile, UserRole } from '../types';
+>>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
 import {
   initialCustomerAccounts,
   initialAssignedJobs,
@@ -32,11 +37,16 @@ interface AuthContextType {
   role: UserRole | null;
   loading: boolean;
   authError: string | null;
+<<<<<<< HEAD
   login: (username: string, password: string) => Promise<void>;
+=======
+  login: (email: string, password: string) => Promise<void>;
+>>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
   logout: () => Promise<void>;
 
   // Data Collections
   customers: CustomerAccount[];
+<<<<<<< HEAD
   jobs: Job[];
   documents: JobDocument[];
   invoices: Invoice[];
@@ -48,12 +58,16 @@ interface AuthContextType {
   procurementRequests: ProcurementRequest[];
   pettyCashEntries: PettyCashEntry[];
   debitNotes: DebitNote[];
+=======
+  jobs: AssignedJob[];
+>>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
   selectedCustomerId: string | null;
   setSelectedCustomerId: (id: string | null) => void;
 
   // Actions
   addCustomer: (customer: Omit<CustomerAccount, 'id' | 'code' | 'totalJobs' | 'activeJobs' | 'closedJobs'>) => void;
   addJob: (job: Omit<AssignedJob, 'id'>) => void;
+<<<<<<< HEAD
   updateJobStatus: (jobId: string, status: JobStatus) => void;
   addDocument: (document: Omit<JobDocument, 'id' | 'uploadedAt'>) => void;
   addQuotation: (quotation: Omit<Quotation, 'id' | 'estimatedMargin' | 'workflowStage' | 'revisionNumber' | 'customerType'> & Partial<Pick<Quotation, 'workflowStage' | 'revisionNumber' | 'customerType'>>) => void;
@@ -77,10 +91,13 @@ interface AuthContextType {
   addProcurementRequest: (description: string, amount: number) => void;
   addPettyCashEntry: (description: string, amount: number) => void;
   addDebitNote: (jobId: string, amount: number, reason: string) => void;
+=======
+>>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+<<<<<<< HEAD
 function usePersistentState<T>(key: string, initialValue: T): [T, Dispatch<SetStateAction<T>>] {
   const [value, setValue] = useState<T>(() => {
     try {
@@ -158,10 +175,13 @@ const toJob = (job: AssignedJob): Job => {
   };
 };
 
+=======
+>>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
+<<<<<<< HEAD
   const [customers, setCustomers] = usePersistentState<CustomerAccount[]>('customers', initialCustomerAccounts);
   const [jobs, setJobs] = usePersistentState<Job[]>('jobs', initialAssignedJobs.map(toJob));
   const [documents, setDocuments] = usePersistentState<JobDocument[]>('documents', []);
@@ -174,6 +194,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [procurementRequests, setProcurementRequests] = usePersistentState<ProcurementRequest[]>('procurement-requests', []);
   const [pettyCashEntries, setPettyCashEntries] = usePersistentState<PettyCashEntry[]>('petty-cash', []);
   const [debitNotes, setDebitNotes] = usePersistentState<DebitNote[]>('debit-notes', []);
+=======
+  const [customers, setCustomers] = useState<CustomerAccount[]>(initialCustomerAccounts);
+  const [jobs, setJobs] = useState<AssignedJob[]>(initialAssignedJobs);
+>>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -192,10 +216,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       setLoading(true);
       try {
+<<<<<<< HEAD
         // Load the profile role and display name from the profiles table.
         const { data, error } = await supabase
           .from('profiles')
           .select('id, role, full_name')
+=======
+        // Ambil data profil (mendukung kolom 'name' atau 'full_name')
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id, role, name, full_name')
+>>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
           .eq('id', session.user.id)
           .maybeSingle();
 
@@ -203,10 +234,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (!data) throw new Error('Profil pengguna tidak ditemukan.');
         if (!active || requestId !== profileRequest) return;
 
+<<<<<<< HEAD
         const role = normalizeUserRole(data.role);
         if (!role) {
           throw new Error(`Role profil "${data.role}" tidak dikenal. Periksa role pada tabel profiles.`);
         }
+=======
+        const role = data.role as UserRole;
+>>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
         const roleTitles: Record<UserRole, string> = {
           sales_marketing: 'Sales & Marketing',
           sales_support: 'Sales Support',
@@ -215,7 +250,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           accounting: 'Accounting',
         };
 
+<<<<<<< HEAD
         const fullName = data.full_name || session.user.email?.split('@')[0] || 'User';
+=======
+        const fullName = data.full_name || data.name || session.user.email?.split('@')[0] || 'User';
+>>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
 
         setUser({
           id: data.id,
@@ -261,7 +300,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
+<<<<<<< HEAD
   const login = async (username: string, password: string) => {
+=======
+  const login = async (email: string, password: string) => {
+>>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
     setAuthError(null);
     if (!isSupabaseConfigured) {
       const err = new Error('Supabase belum dikonfigurasi. Atur VITE_SUPABASE_URL dan VITE_SUPABASE_ANON_KEY.');
@@ -270,6 +313,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     try {
+<<<<<<< HEAD
       const { data, error } = await supabase.functions.invoke('login-with-username', {
         body: { username: username.trim(), password },
       });
@@ -288,6 +332,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const message = error instanceof Error ? error.message : 'Login gagal. Silakan coba lagi.';
       setAuthError(message);
       throw error;
+=======
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      
+      // PERBAIKAN UTAMA: Lempar error jika kata sandi/email salah
+      if (error) {
+        setAuthError(error.message);
+        throw error;
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Login gagal. Silakan coba lagi.';
+      setAuthError(message);
+      throw error; // Memastikan komponen Login.tsx dapat menangkap kegagalan login
+>>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
     }
   };
 
@@ -315,6 +372,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const addJob = (data: Omit<AssignedJob, 'id'>) => {
+<<<<<<< HEAD
     const newJob = toJob({
       ...data,
       id: `j-${Date.now()}`,
@@ -699,6 +757,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }));
   };
 
+=======
+    const newJob: AssignedJob = {
+      ...data,
+      id: `j-${Date.now()}`,
+    };
+    setJobs(prev => [newJob, ...prev]);
+  };
+
+>>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
   return (
     <AuthContext.Provider
       value={{
@@ -710,6 +777,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logout,
         customers,
         jobs,
+<<<<<<< HEAD
         documents,
         invoices,
         quotations,
@@ -720,10 +788,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         procurementRequests,
         pettyCashEntries,
         debitNotes,
+=======
+>>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
         selectedCustomerId,
         setSelectedCustomerId,
         addCustomer,
         addJob,
+<<<<<<< HEAD
         updateJobStatus,
         addDocument,
         addQuotation,
@@ -747,6 +818,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         addProcurementRequest,
         addPettyCashEntry,
         addDebitNote,
+=======
+>>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
       }}
     >
       {children}

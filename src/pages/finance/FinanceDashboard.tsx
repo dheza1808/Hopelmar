@@ -39,7 +39,11 @@ export const FinanceDashboard: React.FC = () => {
     const inv = invoices.find(i => i.id === paymentForm.invoiceId);
     if (!inv) return;
 
+<<<<<<< HEAD
     updateInvoiceStatus(inv.id, Number(paymentForm.amount), 'Kredit');
+=======
+    updateInvoiceStatus(inv.id, 'paid', Number(paymentForm.amount));
+>>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
     setIsRecordPaymentOpen(false);
   };
 

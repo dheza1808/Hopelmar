@@ -55,7 +55,11 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({
       customer: 'PT Chandra Asri Petrochemical',
       type: 'Import',
       mode: 'Sea LCL',
+<<<<<<< HEAD
       currentStatus: 'Exim',
+=======
+      currentStatus: 'Operational',
+>>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
       statusDotColor: 'text-blue-500',
       quotationStatus: 'Waiting Confirmation',
     },
