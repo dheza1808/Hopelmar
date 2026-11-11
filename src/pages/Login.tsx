@@ -1,18 +1,11 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Shield, KeyRound, Eye, EyeOff, ArrowRight } from 'lucide-react';
-<<<<<<< HEAD
 import hopelmarLogo from '../../assets/hopelmar-logo.jpeg';
 
 export const Login: React.FC = () => {
   const { login, authError } = useAuth();
   const [username, setUsername] = useState('');
-=======
-
-export const Login: React.FC = () => {
-  const { login, authError } = useAuth();
-  const [email, setEmail] = useState('');
->>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
@@ -25,17 +18,10 @@ export const Login: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-<<<<<<< HEAD
       await login(username, password);
     } catch (error) {
       setLoginError(
         error instanceof Error ? error.message : 'Username atau password salah! Silakan coba lagi.'
-=======
-      await login(email, password);
-    } catch (error) {
-      setLoginError(
-        error instanceof Error ? error.message : 'Email atau password salah! Silakan coba lagi.'
->>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
       );
     } finally {
       setIsSubmitting(false);
@@ -52,18 +38,7 @@ export const Login: React.FC = () => {
       <div className="w-full max-w-[430px] bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 p-8 z-10">
         {/* Header */}
         <div className="text-center mb-6">
-<<<<<<< HEAD
           <img src={hopelmarLogo} alt="Hopelmar Logistics" className="mx-auto w-52 max-w-full object-contain" />
-=======
-          <div className="inline-flex flex-col items-center">
-            <span className="text-[28px] font-black text-[#b91c1c] tracking-tight leading-none">
-              hopelmar<sup className="text-xs text-slate-800 font-bold ml-0.5">®</sup>
-            </span>
-            <span className="text-[9px] font-extrabold text-slate-800 tracking-[0.3em] uppercase mt-1">
-              LOGISTICS
-            </span>
-          </div>
->>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
         </div>
 
         {/* Warning Badge Banner */}
@@ -85,11 +60,7 @@ export const Login: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-[11px] font-bold text-slate-700 font-mono uppercase tracking-wider mb-1.5">
-<<<<<<< HEAD
               USERNAME
-=======
-              CORPORATE EMAIL
->>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
             </label>
             <div className="relative flex items-center">
               <span className="absolute left-3 text-slate-400">
@@ -99,7 +70,6 @@ export const Login: React.FC = () => {
                 </svg>
               </span>
               <input
-<<<<<<< HEAD
                 type="text"
                 autoComplete="username"
                 value={username}
@@ -107,12 +77,6 @@ export const Login: React.FC = () => {
                 placeholder="username"
                 autoCapitalize="none"
                 spellCheck={false}
-=======
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="sales@hopelmar.com"
->>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
                 required
                 className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-slate-200 text-xs font-mono text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-red-600 focus:border-red-600"
               />

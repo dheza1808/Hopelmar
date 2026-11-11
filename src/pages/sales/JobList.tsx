@@ -78,11 +78,7 @@ export const JobList: React.FC<JobListProps> = ({
       {/* Top Header & 2 KPI Cards */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
-<<<<<<< HEAD
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">Assigned Jobs</h1>
-=======
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Assigned Operational Jobs</h1>
->>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
           <p className="text-xs text-slate-500 mt-0.5">
             Live tracking of forwarder manifests, customs clearance milestones, and booking dispatch.
           </p>
@@ -194,17 +190,10 @@ export const JobList: React.FC<JobListProps> = ({
               onChange={(e) => setStatusFilter(e.target.value)}
               className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 text-xs focus:outline-none"
             >
-<<<<<<< HEAD
               <option value="All">All Status (Quotation, Documentation, Exim, Customs, Completed)</option>
               <option value="Customs Process">Customs Process</option>
               <option value="Documentation">Documentation</option>
               <option value="Exim">Exim</option>
-=======
-              <option value="All">All Status (Quotation, Documentation, Customs, Operational, Completed)</option>
-              <option value="Customs Process">Customs Process</option>
-              <option value="Documentation">Documentation</option>
-              <option value="Operational">Operational</option>
->>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
               <option value="Quotation">Quotation</option>
               <option value="Completed">Completed</option>
             </select>
@@ -293,17 +282,10 @@ export const JobList: React.FC<JobListProps> = ({
                         Documentation
                       </span>
                     )}
-<<<<<<< HEAD
                     {job.currentStatus === 'Exim' && (
                       <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-orange-50 text-orange-700 border border-orange-200 inline-flex items-center gap-1.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
                         Exim
-=======
-                    {job.currentStatus === 'Operational' && (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-orange-50 text-orange-700 border border-orange-200 inline-flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
-                        Operational
->>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
                       </span>
                     )}
                     {job.currentStatus === 'Quotation' && (
@@ -375,11 +357,7 @@ export const JobList: React.FC<JobListProps> = ({
       <Modal
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}
-<<<<<<< HEAD
         title="Create New Job"
-=======
-        title="Create New Operational Job"
->>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
         maxWidth="lg"
       >
         <form onSubmit={handleCreateSubmit} className="space-y-4 text-xs">
@@ -448,11 +426,7 @@ export const JobList: React.FC<JobListProps> = ({
                 <option value="Quotation">Quotation</option>
                 <option value="Documentation">Documentation</option>
                 <option value="Customs Process">Customs Process</option>
-<<<<<<< HEAD
                 <option value="Exim">Exim</option>
-=======
-                <option value="Operational">Operational</option>
->>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
                 <option value="Completed">Completed</option>
               </select>
             </div>

@@ -38,11 +38,8 @@ export interface CustomerAccount {
   industry: string;
   status: 'Active Client' | 'Inactive';
   region: string;
-<<<<<<< HEAD
   picName?: string;
   totalRevenue?: number;
-=======
->>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
 }
 
 export type ShipmentMode = 
@@ -61,11 +58,7 @@ export type ShipmentMode =
 export type JobCurrentStatus = 
   | 'Customs Process' 
   | 'Documentation' 
-<<<<<<< HEAD
   | 'Exim' 
-=======
-  | 'Operational' 
->>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
   | 'Quotation' 
   | 'Completed';
 
@@ -73,16 +66,12 @@ export type QuotationStatus =
   | 'Approved' 
   | 'Waiting Confirmation' 
   | 'Draft' 
-<<<<<<< HEAD
   | 'Rejected'
   | 'sent'
   | 'draft'
   | 'accepted'
   | 'rejected'
   | 'revision_requested';
-=======
-  | 'Rejected';
->>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
 
 export interface AssignedJob {
   id: string;
@@ -101,7 +90,6 @@ export interface AssignedJob {
   runningDays?: string; // e.g. 4 Days
   assignedPic?: string;
 }
-<<<<<<< HEAD
 
 export type JobStatus =
   | 'draft'
@@ -149,6 +137,7 @@ export type JobWorkflowStage =
 
 export type JobDocumentType =
   | 'B/L'
+  | 'AWB'
   | 'MBL'
   | 'HBL'
   | 'SPPB'
@@ -284,5 +273,3 @@ export interface DebitNote {
   reason: string;
   createdAt: string;
 }
-=======
->>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe

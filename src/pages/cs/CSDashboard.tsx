@@ -397,7 +397,8 @@ export const CSDashboard: React.FC = () => {
               onChange={(e) => setDocForm({ ...docForm, docType: e.target.value as JobDocument['docType'] })}
               className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-cyan-500 focus:outline-none cursor-pointer bg-white"
             >
-              <option value="B/L">Bill of Lading / Air Waybill</option>
+              <option value="B/L">Bill of Lading (B/L)</option>
+              <option value="AWB">Air Waybill (AWB)</option>
               <option value="PEB/PIB">PEB / PIB Bea Cukai</option>
               <option value="COO">Certificate of Origin</option>
               <option value="Delivery Order">Delivery Order (D/O)</option>

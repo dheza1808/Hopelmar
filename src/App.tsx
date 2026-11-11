@@ -1,161 +1,22 @@
-<<<<<<< HEAD
 import React from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ProtectedRoute, defaultRoutes } from './components/ProtectedRoute';
 import { Login } from './pages/Login';
 import { WorkflowWorkspace } from './pages/WorkflowWorkspace';
-=======
-import React, { useState } from 'react';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import { Login } from './pages/Login';
-import { DashboardLayout } from './components/layout/DashboardLayout';
-import { ProtectedRoute, defaultRoutes } from './components/ProtectedRoute';
-
-// Pages
-import { SalesDashboard } from './pages/sales/SalesDashboard';
-import { CustomerList } from './pages/sales/CustomerList';
-import { CustomerDetail } from './pages/sales/CustomerDetail';
-import { JobList } from './pages/sales/JobList';
-import { QuotationList } from './pages/sales/QuotationList';
-
-export const AppContent: React.FC = () => {
-  const { user, loading, authError, customers, selectedCustomerId, setSelectedCustomerId } = useAuth();
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [isCreateJobOpen, setIsCreateJobOpen] = useState(false);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center font-mono text-xs text-slate-500 bg-slate-50">
-        Memeriksa sesi Supabase...
-      </div>
-    );
-  }
-
-  // Jika tidak ada user sah dari Supabase, redirect tegas ke /login
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
-
-  // Dynamic Breadcrumbs matching Figma wireframes
-  const getBreadcrumb = () => {
-    if (activeTab === 'dashboard') {
-      return ['PT Hopelmar MIS', 'Sales Dashboard'];
-    }
-    if (activeTab === 'customers') {
-      if (selectedCustomer) {
-        return ['Customers', selectedCustomer.companyName];
-      }
-      return ['PT Hopelmar MIS', 'Customer List'];
-    }
-    if (activeTab === 'jobs') {
-      return ['PT Hopelmar MIS', 'Job List'];
-    }
-    if (activeTab === 'quotations') {
-      return ['PT Hopelmar MIS', 'Quotations'];
-    }
-    return ['PT Hopelmar MIS', 'Sales Dashboard'];
-  };
-
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'dashboard':
-        return (
-          <SalesDashboard
-            onNavigateTab={(tab) => {
-              setActiveTab(tab);
-              if (tab !== 'customers') setSelectedCustomerId(null);
-            }}
-          />
-        );
-
-      case 'customers':
-        if (selectedCustomerId) {
-          return (
-            <CustomerDetail
-              customerId={selectedCustomerId}
-              onBackToList={() => setSelectedCustomerId(null)}
-              onCreateJobForCustomer={() => {
-                setActiveTab('jobs');
-                setIsCreateJobOpen(true);
-              }}
-            />
-          );
-        }
-        return (
-          <CustomerList
-            onSelectCustomer={(cId) => setSelectedCustomerId(cId)}
-          />
-        );
-
-      case 'jobs':
-        return (
-          <JobList
-            isCreateModalOpen={isCreateJobOpen}
-            setIsCreateModalOpen={setIsCreateJobOpen}
-          />
-        );
-
-      case 'quotations':
-        return <QuotationList />;
-
-      default:
-        return (
-          <SalesDashboard
-            onNavigateTab={(tab) => setActiveTab(tab)}
-          />
-        );
-    }
-  };
-
-  return (
-    <DashboardLayout
-      activeTab={activeTab}
-      setActiveTab={setActiveTab}
-      breadcrumb={getBreadcrumb()}
-      onNewQuotation={() => setActiveTab('quotations')}
-      onNavigateHome={() => {
-        setActiveTab('dashboard');
-        setSelectedCustomerId(null);
-      }}
-    >
-      {authError && (
-        <p role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-700">
-          {authError}
-        </p>
-      )}
-      {renderContent()}
-    </DashboardLayout>
-  );
-};
->>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
 
 const RoleRedirect: React.FC = () => {
   const { user, role, loading } = useAuth();
 
   if (loading) {
     return (
-<<<<<<< HEAD
       <div className="flex min-h-screen items-center justify-center bg-slate-50 font-mono text-xs text-slate-500">
-=======
-      <div className="min-h-screen flex items-center justify-center font-mono text-xs text-slate-500 bg-slate-50">
->>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
         Memeriksa sesi pengguna...
       </div>
     );
   }
 
-<<<<<<< HEAD
   if (!user || !role) return <Navigate to="/login" replace />;
-=======
-  if (!user || !role) {
-    return <Navigate to="/login" replace />;
-  }
-
->>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
   return <Navigate to={defaultRoutes[role]} replace />;
 };
 
@@ -164,24 +25,13 @@ const LoginRoute: React.FC = () => {
 
   if (loading) {
     return (
-<<<<<<< HEAD
       <div className="flex min-h-screen items-center justify-center bg-slate-50 font-mono text-xs text-slate-500">
-=======
-      <div className="min-h-screen flex items-center justify-center font-mono text-xs text-slate-500 bg-slate-50">
->>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
         Memeriksa sesi pengguna...
       </div>
     );
   }
 
-<<<<<<< HEAD
   if (user && role) return <Navigate to={defaultRoutes[role]} replace />;
-=======
-  if (user && role) {
-    return <Navigate to={defaultRoutes[role]} replace />;
-  }
-
->>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
   return <Login />;
 };
 
@@ -192,7 +42,6 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<LoginRoute />} />
           <Route path="/" element={<RoleRedirect />} />
-<<<<<<< HEAD
           <Route element={<ProtectedRoute allowedRoles={['sales_marketing']} />}>
             <Route path="/sales-marketing" element={<WorkflowWorkspace />} />
           </Route>
@@ -208,37 +57,9 @@ export default function App() {
           <Route element={<ProtectedRoute allowedRoles={['accounting']} />}>
             <Route path="/accounting" element={<WorkflowWorkspace />} />
           </Route>
-=======
-
-          <Route element={<ProtectedRoute allowedRoles={['sales_marketing']} />}>
-            <Route path="/sales-marketing" element={<AppContent />} />
-          </Route>
-
-          {/* Halaman Sales Support diizinkan untuk Sales Support DAN Sales & Marketing */}
-          <Route element={<ProtectedRoute allowedRoles={['sales_support', 'sales_marketing']} />}>
-            <Route path="/sales-support" element={<div className="p-8 font-semibold">Dashboard Sales Support (Terbitkan Job Number &amp; Auto-fill)</div>} />
-          </Route>
-
-          <Route element={<ProtectedRoute allowedRoles={['exim']} />}>
-            <Route path="/exim" element={<div className="p-8 font-semibold">Dashboard Exim (Dokumen Incoterm &amp; Eksekusi Pengiriman)</div>} />
-          </Route>
-
-          <Route element={<ProtectedRoute allowedRoles={['admin_invoice']} />}>
-            <Route path="/admin-invoice" element={<div className="p-8 font-semibold">Dashboard Admin Invoice + Pengadaan (Buat &amp; Kirim Invoice)</div>} />
-          </Route>
-
-          <Route element={<ProtectedRoute allowedRoles={['accounting']} />}>
-            <Route path="/accounting" element={<div className="p-8 font-semibold">Dashboard Accounting (Report Margin &amp; PNL)</div>} />
-          </Route>
-
->>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
   );
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe

@@ -14,13 +14,6 @@ CREATE TYPE user_role AS ENUM (
   'exim',
   'admin_invoice',
   'accounting'
-=======
-  'sales',
-  'sales_support',
-  'customer_service',
-  'finance',
-  'manager'
->>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
 );
 
 CREATE TYPE job_status AS ENUM (
@@ -37,10 +30,7 @@ CREATE TYPE quotation_status AS ENUM (
   'draft',
   'sent_to_customer',
   'accepted',
-<<<<<<< HEAD
   'revision_requested',
-=======
->>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
   'rejected',
   'expired'
 );
@@ -67,27 +57,19 @@ CREATE TYPE doc_type AS ENUM (
 CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   email TEXT NOT NULL,
-<<<<<<< HEAD
   username TEXT,
   full_name TEXT NOT NULL,
   role user_role NOT NULL DEFAULT 'sales_marketing',
-=======
-  full_name TEXT NOT NULL,
-  role user_role NOT NULL DEFAULT 'sales',
->>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
   phone TEXT,
   avatar_url TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-<<<<<<< HEAD
 CREATE UNIQUE INDEX IF NOT EXISTS profiles_username_lower_unique
   ON public.profiles (LOWER(username))
   WHERE username IS NOT NULL;
 
-=======
->>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
 -- 4. CUSTOMERS TABLE
 CREATE TABLE IF NOT EXISTS public.customers (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -116,13 +98,10 @@ CREATE TABLE IF NOT EXISTS public.quotations (
   total_cost_est NUMERIC(15, 2) NOT NULL DEFAULT 0,
   estimated_margin NUMERIC(15, 2) GENERATED ALWAYS AS (total_selling_est - total_cost_est) STORED,
   status quotation_status DEFAULT 'draft',
-<<<<<<< HEAD
   customer_type TEXT NOT NULL DEFAULT 'regular' CHECK (customer_type IN ('regular', 'incidental')),
   workflow_stage TEXT NOT NULL DEFAULT 'customer_review'
     CHECK (workflow_stage IN ('customer_review', 'revision_requested', 'legality_check', 'ready_for_support', 'job_created')),
   revision_number INT NOT NULL DEFAULT 0 CHECK (revision_number >= 0),
-=======
->>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
   valid_until DATE NOT NULL,
   notes TEXT,
   created_by UUID REFERENCES public.profiles(id),
@@ -138,7 +117,6 @@ CREATE TABLE IF NOT EXISTS public.jobs (
   quotation_id UUID REFERENCES public.quotations(id),
   service_type TEXT NOT NULL,
   status job_status DEFAULT 'draft',
-<<<<<<< HEAD
   workflow_stage TEXT NOT NULL DEFAULT 'legacy'
     CHECK (workflow_stage IN ('legacy', 'exim_work', 'needs_extra_cost_decision', 'support_extra_cost', 'ready_for_invoice', 'invoiced')),
   incoterm TEXT,
@@ -146,8 +124,6 @@ CREATE TABLE IF NOT EXISTS public.jobs (
   additional_cost NUMERIC(15, 2) NOT NULL DEFAULT 0 CHECK (additional_cost >= 0),
   selling_price NUMERIC(15, 2) NOT NULL DEFAULT 0 CHECK (selling_price >= 0),
   costing_total NUMERIC(15, 2) NOT NULL DEFAULT 0 CHECK (costing_total >= 0),
-=======
->>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
   origin TEXT NOT NULL,
   destination TEXT NOT NULL,
   created_by UUID REFERENCES public.profiles(id),
@@ -216,10 +192,7 @@ CREATE TABLE IF NOT EXISTS public.invoices (
   tax_amount NUMERIC(15, 2) NOT NULL DEFAULT 0,
   total_selling NUMERIC(15, 2) NOT NULL DEFAULT 0,
   status invoice_status DEFAULT 'unpaid',
-<<<<<<< HEAD
   delivery_status TEXT NOT NULL DEFAULT 'draft' CHECK (delivery_status IN ('draft', 'sent')),
-=======
->>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
   notes TEXT,
   created_by UUID REFERENCES public.profiles(id),
   created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -239,7 +212,6 @@ CREATE TABLE IF NOT EXISTS public.payments (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-<<<<<<< HEAD
 CREATE TABLE IF NOT EXISTS public.pnl_reports (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   job_count INT NOT NULL DEFAULT 0,
@@ -250,8 +222,6 @@ CREATE TABLE IF NOT EXISTS public.pnl_reports (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-=======
->>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
 -- ==============================================================================
 -- 12. ROW LEVEL SECURITY (RLS) POLICIES
 -- ==============================================================================
@@ -264,10 +234,7 @@ ALTER TABLE public.job_documents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.job_costs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.invoices ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
-<<<<<<< HEAD
 ALTER TABLE public.pnl_reports ENABLE ROW LEVEL SECURITY;
-=======
->>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
 
 CREATE POLICY "Users can view own profile"
   ON public.profiles FOR SELECT TO authenticated
@@ -289,37 +256,23 @@ CREATE POLICY "Authenticated users can view job documents"
 CREATE POLICY "Authenticated users can view quotations"
   ON public.quotations FOR SELECT TO authenticated USING (true);
 
-<<<<<<< HEAD
 -- Accounting owns PNL and costing reports.
 CREATE POLICY "Accounting can view costing"
-=======
--- Finance & Manager only for financial records
-CREATE POLICY "Finance & Manager can view costing"
->>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
   ON public.job_costs FOR SELECT TO authenticated
   USING (
     EXISTS (
       SELECT 1 FROM public.profiles 
       WHERE profiles.id = auth.uid() 
-<<<<<<< HEAD
       AND profiles.role IN ('accounting')
     )
   );
 
 CREATE POLICY "Finance roles can view invoices"
-=======
-      AND profiles.role IN ('finance', 'manager')
-    )
-  );
-
-CREATE POLICY "Finance & Manager can view invoices"
->>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
   ON public.invoices FOR SELECT TO authenticated
   USING (
     EXISTS (
       SELECT 1 FROM public.profiles 
       WHERE profiles.id = auth.uid() 
-<<<<<<< HEAD
       AND profiles.role IN ('admin_invoice', 'accounting', 'sales_marketing')
     )
   );
@@ -369,12 +322,6 @@ CREATE POLICY "Authenticated users can upload job documents for demo"
     AND (storage.foldername(name))[1] = auth.uid()::TEXT
   );
 
-=======
-      AND profiles.role IN ('finance', 'manager', 'sales')
-    )
-  );
-
->>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
 -- ==============================================================================
 -- 13. SEED DUMMY DATA FOR DEMO & TESTING
 -- ==============================================================================

@@ -1105,7 +1105,7 @@ export const WorkflowWorkspace: React.FC = () => {
                 if (file) setDocumentFiles({ ...documentFiles, [job.id]: file });
               }} className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
               <select value={form.type} onChange={(event) => setDocumentForms({ ...documentForms, [job.id]: { ...form, type: event.target.value as JobDocumentType } })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm">
-                {(['PIB', 'PEB', 'SPPB', 'MBL', 'HBL', 'B/L', 'COO', 'Delivery Order', 'Packing List', 'Invoice'] as JobDocumentType[]).map((type) => <option key={type} value={type}>{type}</option>)}
+                {(['PIB', 'PEB', 'SPPB', 'MBL', 'HBL', 'B/L', 'AWB', 'COO', 'Delivery Order', 'Packing List', 'Invoice'] as JobDocumentType[]).map((type) => <option key={type} value={type}>{type}</option>)}
               </select>
               <button disabled={documentUploading[job.id]} type="submit" className="rounded-lg bg-blue-700 px-3 py-2 text-sm font-bold text-white disabled:cursor-wait disabled:opacity-60">
                 {documentUploading[job.id] ? 'Mengunggah...' : 'Upload dokumen'}

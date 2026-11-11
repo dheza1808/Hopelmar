@@ -330,7 +330,8 @@ export const SupportDashboard: React.FC<SupportDashboardProps> = ({
             >
               <option value="Packing List">Packing List</option>
               <option value="Invoice">Commercial Invoice</option>
-              <option value="B/L">Bill of Lading / Air Waybill</option>
+              <option value="B/L">Bill of Lading (B/L)</option>
+              <option value="AWB">Air Waybill (AWB)</option>
               <option value="COO">Certificate of Origin (COO)</option>
               <option value="PEB/PIB">PEB / PIB (Pabean)</option>
               <option value="Other">Lainnya</option>
