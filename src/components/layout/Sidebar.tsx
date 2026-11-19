@@ -84,7 +84,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
     <aside className="w-[240px] bg-white border-r border-slate-200 flex flex-col shrink-0 min-h-[calc(100vh-60px)] font-['Plus_Jakarta_Sans',sans-serif]">
       {/* Active Perspective Card */}
       <div className="px-2.5 pb-0.5 pt-px">
- sy       <div className="p-2.5 bg-slate-50/70 border border-slate-200/80 rounded-xl flex items-center justify-between">
+       <div className="p-2.5 bg-slate-50/70 border border-slate-200/80 rounded-xl flex items-center justify-between">
           <div>
             <div className="text-[9px] font-medium text-slate-400 uppercase tracking-wide">Active Perspective</div>
             <div className="text-xs font-bold text-slate-800">Role: {role ? roleLabels[role] : 'Unknown'}</div>

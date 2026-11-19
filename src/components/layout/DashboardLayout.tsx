@@ -22,7 +22,8 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   return (
     <div className="min-h-screen bg-[#f8fafc] flex flex-col font-['Plus_Jakarta_Sans',sans-serif] antialiased">
       <Navbar 
-        breadcrumb={breadcrumb} 
+        breadcrumb={breadcrumb}  
+        
         onNewQuotation={onNewQuotation}
         onNavigateHome={onNavigateHome}
       />
