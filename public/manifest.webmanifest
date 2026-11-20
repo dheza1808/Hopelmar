@@ -1,0 +1,16 @@
+{
+  "name": "Hopelmar Job Tracker",
+  "short_name": "Hopelmar",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#a91f29",
+  "icons": [
+    {
+      "src": "/hopelmar-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
