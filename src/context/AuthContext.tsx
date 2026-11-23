@@ -179,8 +179,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
   const workflowReady = useRef(false);
   const workflowSnapshot = useRef(new Map<string, string>());
-  const localWorkflowState = useRef({ customers, quotations, jobs, invoices });
-  localWorkflowState.current = { customers, quotations, jobs, invoices };
+  const localWorkflowState = useRef({
+    customers,
+    quotations,
+    jobs,
+    invoices,
+    documents,
+    pnlReports,
+    vendors,
+    vendorBills,
+    fieldTasks,
+    procurementRequests,
+    pettyCashEntries,
+    debitNotes,
+  });
+  localWorkflowState.current = {
+    customers,
+    quotations,
+    jobs,
+    invoices,
+    documents,
+    pnlReports,
+    vendors,
+    vendorBills,
+    fieldTasks,
+    procurementRequests,
+    pettyCashEntries,
+    debitNotes,
+  };
 
   useEffect(() => {
     let active = true;
@@ -282,15 +308,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const userId = user.id;
     const userRole = user.role;
     const recordKey = (type: string, id: string) => `${type}:${id}`;
-    const canWrite = (type: string) => (
-      type === 'customer'
-        ? userRole === 'sales_marketing'
-        : type === 'quotation'
-          ? userRole === 'sales_marketing' || userRole === 'sales_support'
-          : type === 'invoice'
-            ? userRole === 'admin_invoice' || userRole === 'accounting'
-          : true
-    );
+    const canWrite = (type: string) => {
+      if (type === 'customer') return userRole === 'sales_marketing';
+      if (type === 'quotation') return userRole === 'sales_marketing' || userRole === 'sales_support';
+      if (type === 'invoice') return userRole === 'admin_invoice' || userRole === 'accounting';
+      if (type === 'job_document') return userRole === 'exim' || userRole === 'sales_support';
+      if (type === 'pnl_report') return userRole === 'accounting';
+      if (type === 'vendor' || type === 'vendor_bill') return userRole === 'sales_support';
+      if (type === 'field_task') return userRole === 'exim';
+      if (type === 'procurement_request' || type === 'petty_cash' || type === 'debit_note') {
+        return userRole === 'admin_invoice';
+      }
+      return type === 'job';
+    };
 
     const syncWorkflow = async () => {
       try {
@@ -310,6 +340,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             .map((item) => ({ record_type: 'job', record_id: item.id, payload: item })),
           ...local.invoices.filter((item) => canWrite('invoice') && !remoteKeys.has(recordKey('invoice', item.id)))
             .map((item) => ({ record_type: 'invoice', record_id: item.id, payload: item })),
+          ...local.documents.filter((item) => canWrite('job_document') && !remoteKeys.has(recordKey('job_document', item.id)))
+            .map((item) => ({ record_type: 'job_document', record_id: item.id, payload: item })),
+          ...local.pnlReports.filter((item) => canWrite('pnl_report') && !remoteKeys.has(recordKey('pnl_report', item.id)))
+            .map((item) => ({ record_type: 'pnl_report', record_id: item.id, payload: item })),
+          ...local.vendors.filter((item) => canWrite('vendor') && !remoteKeys.has(recordKey('vendor', item.id)))
+            .map((item) => ({ record_type: 'vendor', record_id: item.id, payload: item })),
+          ...local.vendorBills.filter((item) => canWrite('vendor_bill') && !remoteKeys.has(recordKey('vendor_bill', item.id)))
+            .map((item) => ({ record_type: 'vendor_bill', record_id: item.id, payload: item })),
+          ...local.fieldTasks.filter((item) => canWrite('field_task') && !remoteKeys.has(recordKey('field_task', item.id)))
+            .map((item) => ({ record_type: 'field_task', record_id: item.id, payload: item })),
+          ...local.procurementRequests.filter((item) => canWrite('procurement_request') && !remoteKeys.has(recordKey('procurement_request', item.id)))
+            .map((item) => ({ record_type: 'procurement_request', record_id: item.id, payload: item })),
+          ...local.pettyCashEntries.filter((item) => canWrite('petty_cash') && !remoteKeys.has(recordKey('petty_cash', item.id)))
+            .map((item) => ({ record_type: 'petty_cash', record_id: item.id, payload: item })),
+          ...local.debitNotes.filter((item) => canWrite('debit_note') && !remoteKeys.has(recordKey('debit_note', item.id)))
+            .map((item) => ({ record_type: 'debit_note', record_id: item.id, payload: item })),
         ];
 
         if (seedRows.length) {
@@ -342,6 +388,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const cloudInvoices = (data || [])
           .filter((record) => record.record_type === 'invoice')
           .map((record) => record.payload as Invoice);
+        const cloudDocuments = (data || [])
+          .filter((record) => record.record_type === 'job_document')
+          .map((record) => record.payload as JobDocument);
+        const cloudPnlReports = (data || [])
+          .filter((record) => record.record_type === 'pnl_report')
+          .map((record) => record.payload as PnlReport);
+        const cloudVendors = (data || [])
+          .filter((record) => record.record_type === 'vendor')
+          .map((record) => record.payload as Vendor);
+        const cloudVendorBills = (data || [])
+          .filter((record) => record.record_type === 'vendor_bill')
+          .map((record) => record.payload as VendorBill);
+        const cloudFieldTasks = (data || [])
+          .filter((record) => record.record_type === 'field_task')
+          .map((record) => record.payload as FieldTask);
+        const cloudProcurementRequests = (data || [])
+          .filter((record) => record.record_type === 'procurement_request')
+          .map((record) => record.payload as ProcurementRequest);
+        const cloudPettyCashEntries = (data || [])
+          .filter((record) => record.record_type === 'petty_cash')
+          .map((record) => record.payload as PettyCashEntry);
+        const cloudDebitNotes = (data || [])
+          .filter((record) => record.record_type === 'debit_note')
+          .map((record) => record.payload as DebitNote);
 
         const mergeById = <T extends { id: string }>(localItems: T[], cloudItems: T[]) => {
           const merged = new Map(localItems.map((item) => [item.id, item]));
@@ -352,16 +422,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const mergedQuotations = mergeById(local.quotations, cloudQuotations);
         const mergedJobs = mergeById(local.jobs, cloudJobs);
         const mergedInvoices = mergeById(local.invoices, cloudInvoices);
+        const mergedDocuments = mergeById(local.documents, cloudDocuments);
+        const mergedPnlReports = mergeById(local.pnlReports, cloudPnlReports);
+        const mergedVendors = mergeById(local.vendors, cloudVendors);
+        const mergedVendorBills = mergeById(local.vendorBills, cloudVendorBills);
+        const mergedFieldTasks = mergeById(local.fieldTasks, cloudFieldTasks);
+        const mergedProcurementRequests = mergeById(local.procurementRequests, cloudProcurementRequests);
+        const mergedPettyCashEntries = mergeById(local.pettyCashEntries, cloudPettyCashEntries);
+        const mergedDebitNotes = mergeById(local.debitNotes, cloudDebitNotes);
 
         workflowSnapshot.current.clear();
         mergedCustomers.forEach((item) => workflowSnapshot.current.set(recordKey('customer', item.id), JSON.stringify(item)));
         mergedQuotations.forEach((item) => workflowSnapshot.current.set(recordKey('quotation', item.id), JSON.stringify(item)));
         mergedJobs.forEach((item) => workflowSnapshot.current.set(recordKey('job', item.id), JSON.stringify(item)));
         mergedInvoices.forEach((item) => workflowSnapshot.current.set(recordKey('invoice', item.id), JSON.stringify(item)));
+        mergedDocuments.forEach((item) => workflowSnapshot.current.set(recordKey('job_document', item.id), JSON.stringify(item)));
+        mergedPnlReports.forEach((item) => workflowSnapshot.current.set(recordKey('pnl_report', item.id), JSON.stringify(item)));
+        mergedVendors.forEach((item) => workflowSnapshot.current.set(recordKey('vendor', item.id), JSON.stringify(item)));
+        mergedVendorBills.forEach((item) => workflowSnapshot.current.set(recordKey('vendor_bill', item.id), JSON.stringify(item)));
+        mergedFieldTasks.forEach((item) => workflowSnapshot.current.set(recordKey('field_task', item.id), JSON.stringify(item)));
+        mergedProcurementRequests.forEach((item) => workflowSnapshot.current.set(recordKey('procurement_request', item.id), JSON.stringify(item)));
+        mergedPettyCashEntries.forEach((item) => workflowSnapshot.current.set(recordKey('petty_cash', item.id), JSON.stringify(item)));
+        mergedDebitNotes.forEach((item) => workflowSnapshot.current.set(recordKey('debit_note', item.id), JSON.stringify(item)));
         setCustomers(mergedCustomers);
         setQuotations(mergedQuotations);
         setJobs(mergedJobs);
         setInvoices(mergedInvoices);
+        setDocuments(mergedDocuments);
+        setPnlReports(mergedPnlReports);
+        setVendors(mergedVendors);
+        setVendorBills(mergedVendorBills);
+        setFieldTasks(mergedFieldTasks);
+        setProcurementRequests(mergedProcurementRequests);
+        setPettyCashEntries(mergedPettyCashEntries);
+        setDebitNotes(mergedDebitNotes);
         workflowReady.current = true;
         setAuthError(null);
         setWorkflowLoading(false);
@@ -388,6 +482,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               setJobs((items) => mergeById(items, [payload as Job]));
             } else if (record.record_type === 'invoice') {
               setInvoices((items) => mergeById(items, [payload as Invoice]));
+            } else if (record.record_type === 'job_document') {
+              setDocuments((items) => mergeById(items, [payload as JobDocument]));
+            } else if (record.record_type === 'pnl_report') {
+              setPnlReports((items) => mergeById(items, [payload as PnlReport]));
+            } else if (record.record_type === 'vendor') {
+              setVendors((items) => mergeById(items, [payload as Vendor]));
+            } else if (record.record_type === 'vendor_bill') {
+              setVendorBills((items) => mergeById(items, [payload as VendorBill]));
+            } else if (record.record_type === 'field_task') {
+              setFieldTasks((items) => mergeById(items, [payload as FieldTask]));
+            } else if (record.record_type === 'procurement_request') {
+              setProcurementRequests((items) => mergeById(items, [payload as ProcurementRequest]));
+            } else if (record.record_type === 'petty_cash') {
+              setPettyCashEntries((items) => mergeById(items, [payload as PettyCashEntry]));
+            } else if (record.record_type === 'debit_note') {
+              setDebitNotes((items) => mergeById(items, [payload as DebitNote]));
             }
           })
           .subscribe((status) => {
@@ -402,7 +512,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch (error) {
         console.error('Failed to sync shared workflow data.', error);
         if (active) {
-          setAuthError('Data workflow bersama gagal dimuat. Pastikan migration shared workflow sudah dijalankan.');
+          setAuthError('Data workflow bersama gagal dimuat. Pastikan migrasi shared workflow dan workflow extras sudah dijalankan.');
           setWorkflowLoading(false);
         }
       }
@@ -423,6 +533,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       ...quotations.map((item) => ({ type: 'quotation', id: item.id, payload: item })),
       ...jobs.map((item) => ({ type: 'job', id: item.id, payload: item })),
       ...invoices.map((item) => ({ type: 'invoice', id: item.id, payload: item })),
+      ...documents.map((item) => ({ type: 'job_document', id: item.id, payload: item })),
+      ...pnlReports.map((item) => ({ type: 'pnl_report', id: item.id, payload: item })),
+      ...vendors.map((item) => ({ type: 'vendor', id: item.id, payload: item })),
+      ...vendorBills.map((item) => ({ type: 'vendor_bill', id: item.id, payload: item })),
+      ...fieldTasks.map((item) => ({ type: 'field_task', id: item.id, payload: item })),
+      ...procurementRequests.map((item) => ({ type: 'procurement_request', id: item.id, payload: item })),
+      ...pettyCashEntries.map((item) => ({ type: 'petty_cash', id: item.id, payload: item })),
+      ...debitNotes.map((item) => ({ type: 'debit_note', id: item.id, payload: item })),
     ];
     const changed = records.filter((record) => (
       workflowSnapshot.current.get(`${record.type}:${record.id}`) !== JSON.stringify(record.payload)
@@ -433,7 +551,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       workflowSnapshot.current.set(`${record.type}:${record.id}`, JSON.stringify(record.payload));
     });
     const syncRecords = async () => {
-      for (const type of ['customer', 'quotation', 'job', 'invoice']) {
+      for (const type of [
+        'customer',
+        'quotation',
+        'job',
+        'invoice',
+        'job_document',
+        'pnl_report',
+        'vendor',
+        'vendor_bill',
+        'field_task',
+        'procurement_request',
+        'petty_cash',
+        'debit_note',
+      ]) {
         const batch = changed.filter((record) => record.type === type);
         if (!batch.length) continue;
         const { error } = await supabase.from('workflow_records').upsert(
@@ -448,13 +579,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         );
         if (error) {
           console.error(`Failed to sync ${type} workflow records.`, error);
+          changed.forEach((record) => {
+            const key = `${record.type}:${record.id}`;
+            if (workflowSnapshot.current.get(key) === JSON.stringify(record.payload)) {
+              workflowSnapshot.current.delete(key);
+            }
+          });
           setAuthError(`Perubahan ${type} gagal disimpan ke server. Periksa koneksi dan izin akun.`);
           return;
         }
       }
     };
     void syncRecords();
-  }, [customers, invoices, jobs, quotations, user?.id]);
+  }, [
+    customers,
+    debitNotes,
+    documents,
+    fieldTasks,
+    invoices,
+    jobs,
+    pettyCashEntries,
+    pnlReports,
+    procurementRequests,
+    quotations,
+    user?.id,
+    vendorBills,
+    vendors,
+  ]);
 
   const login = async (username: string, password: string) => {
     setAuthError(null);

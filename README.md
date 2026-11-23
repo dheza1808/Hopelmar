@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Hopelmar Job Tracker
 
 ## Menjalankan aplikasi
@@ -53,8 +52,16 @@ Login menggunakan username yang disimpan pada `profiles.username`; pencarian use
 
 Username login tidak membedakan huruf besar/kecil. Password tetap password akun Supabase Auth yang sudah digunakan.
 
-> Catatan implementasi: selain dokumen yang diunggah, data operasional workflow masih disimpan di `localStorage` browser. Data belum tersinkron antar pengguna/perangkat atau ditulis ke tabel Supabase; integrasi CRUD Supabase dibutuhkan sebelum dipakai sebagai sistem produksi multi-role.
-=======
-# Hopelmar
-Projek_KP
->>>>>>> 813a504b7d5a700a51412b1f909548bb936c32fe
+## Sinkronisasi workflow dan notifikasi
+
+Customer, quotation, job, dan invoice disinkronkan antar pengguna melalui tabel `workflow_records`; riwayat notifikasi disimpan di `notifications`. Untuk database yang sudah memakai skema dasar aplikasi, jalankan migrasi berikut di SQL Editor Supabase secara berurutan:
+
+1. `supabase/migrations/20261120_add_push_subscriptions.sql`
+2. `supabase/migrations/20261123_add_notification_history.sql`
+3. `supabase/migrations/20261123_add_push_device_type.sql`
+4. `supabase/migrations/20261123_sync_shared_workflow.sql`
+5. `supabase/migrations/20261123_sync_workflow_extras.sql`
+
+Data tambahan yang disinkronkan mencakup dokumen Job, PNL, vendor dan tagihan vendor, task lapangan, pengadaan, petty cash, serta debit note. Data lokal yang sudah ada akan disalin ke Supabase saat pengguna dengan role yang berhak login dan sinkronisasi berhasil.
+
+Jika fitur dokumen legalitas customer digunakan, jalankan juga `supabase/migrations/20261120_add_customer_legal_documents.sql`. Setup push ke HP—termasuk deploy Edge Function, secrets, dan Database Webhook—dijelaskan di [`supabase/PUSH_NOTIFICATIONS.md`](./supabase/PUSH_NOTIFICATIONS.md).

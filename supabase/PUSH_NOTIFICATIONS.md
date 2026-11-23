@@ -9,6 +9,7 @@ Push notifications require HTTPS, a browser with Web Push support, and a user wh
    - `supabase/migrations/20261123_add_notification_history.sql`
    - `supabase/migrations/20261123_add_push_device_type.sql`
    - `supabase/migrations/20261123_sync_shared_workflow.sql`
+   - `supabase/migrations/20261123_sync_workflow_extras.sql`
 2. Generate a VAPID key pair in a trusted local terminal:
 
    ```powershell
@@ -38,4 +39,4 @@ Push notifications require HTTPS, a browser with Web Push support, and a user wh
 
 6. On each phone, log in with the recipient's account, open the bell menu, choose **Aktifkan notifikasi HP**, and allow notifications. If that device had push enabled before applying the device-type migration, turn it off and on again so it is registered as a mobile device.
 
-Customer, quotation, job, and invoice records are synchronized through `workflow_records`. When a quotation moves to `ready_for_support`, Sales Support users receive a history entry and a push on registered mobile devices. When a job enters `exim_work`, Exim users receive the same. When Exim completes work, Sales Support is notified; when the job becomes `ready_for_invoice`, Admin Invoice is notified on Billing/Invoice; when Admin Invoice creates an invoice, Accounting is notified on its Invoice page. The sender's web app must be open to save the workflow change; recipients do not need their web app or laptop open. Push goes only to subscriptions classified as mobile.
+Customer, quotation, job, invoice, job document, PNL, vendor, vendor bill, field task, procurement request, petty cash, and debit note records are synchronized through `workflow_records`. Existing local records are copied to Supabase on the first successful login by a role authorized to write that record type. When a quotation moves to `ready_for_support`, Sales Support users receive a history entry and a push on registered mobile devices. When a job enters `exim_work`, Exim users receive the same. When Exim completes work, Sales Support is notified; when the job becomes `ready_for_invoice`, Admin Invoice is notified on Billing/Invoice; when Admin Invoice creates an invoice, Accounting is notified on its Invoice page. The sender's web app must be open to save the workflow change; recipients do not need their web app or laptop open. Push goes only to subscriptions classified as mobile.
