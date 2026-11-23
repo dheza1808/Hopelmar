@@ -164,6 +164,8 @@ export interface JobDocument {
 export interface Quotation {
   id: string;
   quotationNo: string;
+  rfqNo?: string;
+  incoterm?: string;
   customerId: string;
   customerName: string;
   origin: string;
@@ -181,9 +183,27 @@ export interface Quotation {
   subtotal?: number;
   taxAmount?: number;
   lineItems?: QuotationLineItem[];
+  rateSections?: QuotationRateSections;
   customerType: 'regular' | 'incidental';
   workflowStage: QuotationWorkflowStage;
   revisionNumber: number;
+}
+
+export interface QuotationRateLine {
+  description: string;
+  currency: string;
+  rate20ft: number | null;
+  rate40ft: number | null;
+  rateLcl: number | null;
+  rateOthers: string;
+  uom: string;
+  remarks: string;
+}
+
+export interface QuotationRateSections {
+  oceanFreight: QuotationRateLine[];
+  exw: QuotationRateLine[];
+  oceanImportHandling: QuotationRateLine[];
 }
 
 export interface QuotationLineItem {

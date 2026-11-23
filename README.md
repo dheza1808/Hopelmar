@@ -54,7 +54,7 @@ Username login tidak membedakan huruf besar/kecil. Password tetap password akun 
 
 ## Sinkronisasi workflow dan notifikasi
 
-Customer, quotation, job, dan invoice disinkronkan antar pengguna melalui tabel `workflow_records`; riwayat notifikasi disimpan di `notifications`. Untuk database yang sudah memakai skema dasar aplikasi, jalankan migrasi berikut di SQL Editor Supabase secara berurutan:
+Customer, quotation, job, dan invoice disinkronkan antar pengguna melalui tabel `workflow_records`; riwayat notifikasi disimpan di `notifications`. Quotation menyimpan RFQ No., Incoterm, dan tabel tarif Ocean Freight, EXW, serta Ocean Import Handling pada payload quotation yang sama. Data ini otomatis tersimpan di Supabase; tidak perlu tabel quotation terpisah. Untuk database yang sudah memakai skema dasar aplikasi, jalankan migrasi berikut di SQL Editor Supabase secara berurutan:
 
 1. `supabase/migrations/20261120_add_push_subscriptions.sql`
 2. `supabase/migrations/20261123_add_notification_history.sql`

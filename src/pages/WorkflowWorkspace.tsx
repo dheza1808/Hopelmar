@@ -2,11 +2,12 @@ import React, { useMemo, useState } from 'react';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { roleNavItems } from '../components/layout/Sidebar';
 import { useAuth } from '../context/AuthContext';
-import { CustomerAccount, Job, JobDocumentType, JobWorkflowStage, PaymentMethod, Quotation, QuotationLineItem } from '../types';
+import { CustomerAccount, Job, JobDocumentType, JobWorkflowStage, PaymentMethod, Quotation, QuotationRateSections } from '../types';
 import { ArrowUpRight, BriefcaseBusiness, Clock3, FileText, Printer, Search, Users } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
-import { printDocument, printJobOrder, printQuotationDocument } from '../lib/printDocument';
+import { printDocument, printJobOrder, printPnlReport, printQuotationDocument } from '../lib/printDocument';
 import { CustomerLegalDocuments } from '../components/shared/CustomerLegalDocuments';
+import { createDefaultQuotationRateSections, QuotationRateEditor } from '../components/shared/QuotationRateEditor';
 import type { WorkspaceNotification, WorkspaceSearchResult } from '../components/layout/Navbar';
 
 const currency = (amount: number) => `Rp ${amount.toLocaleString('id-ID')}`;
@@ -137,6 +138,9 @@ export const WorkflowWorkspace: React.FC = () => {
     totalSellingEst: 0,
     totalCostEst: 0,
     validUntil: '',
+    rfqNo: '',
+    incoterm: '',
+    rateSections: createDefaultQuotationRateSections(),
   });
   const [incoterms, setIncoterms] = useState<Record<string, string>>({});
   const [documentsConfirmed, setDocumentsConfirmed] = useState<Record<string, boolean>>({});
@@ -156,15 +160,18 @@ export const WorkflowWorkspace: React.FC = () => {
   const [quotationForm, setQuotationForm] = useState({
     customerId: customers[0]?.id || '',
     customerType: 'regular' as 'regular' | 'incidental',
+    rfqNo: '',
+    incoterm: '',
     serviceType: '',
     cargoDescription: '',
     origin: '',
     destination: '',
+    totalSellingEst: 0,
     totalCostEst: 0,
     validUntil: '',
     paymentTerms: customers[0]?.creditTerms || '',
     notes: '',
-    lineItems: [{ description: '', quantity: 1, unitPrice: 0, taxRate: 0 }] as QuotationLineItem[],
+    rateSections: createDefaultQuotationRateSections(),
   });
 
   const role = userRole;
@@ -281,16 +288,30 @@ export const WorkflowWorkspace: React.FC = () => {
       setFormError('Pilih customer sebelum membuat quotation.');
       return;
     }
-    const invalidLine = quotationForm.lineItems.some((item) =>
-      !item.description.trim() || item.quantity <= 0 || item.unitPrice < 0 || item.taxRate < 0 || item.taxRate > 100,
-    );
-    const subtotal = quotationForm.lineItems.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
-    const taxAmount = quotationForm.lineItems.reduce((sum, item) => sum + item.quantity * item.unitPrice * item.taxRate / 100, 0);
-    const totalSellingEst = subtotal + taxAmount;
-    if (invalidLine) {
-      setFormError('Lengkapi deskripsi dan pastikan qty, harga, serta tarif pajak pada setiap baris valid.');
+    const rateLines = [
+      ...quotationForm.rateSections.oceanFreight,
+      ...quotationForm.rateSections.exw,
+      ...quotationForm.rateSections.oceanImportHandling,
+    ];
+    const invalidRate = rateLines.some((line) => (
+      [line.rate20ft, line.rate40ft, line.rateLcl].some((rate) => rate !== null && (!Number.isFinite(rate) || rate < 0))
+    ));
+    if (invalidRate) {
+      setFormError('Tarif quotation harus berupa angka nol atau lebih.');
       return;
     }
+    const pricedLines = rateLines.filter((line) => (
+      [line.rate20ft, line.rate40ft, line.rateLcl].some((rate) => rate !== null)
+    ));
+    if (!pricedLines.length) {
+      setFormError('Isi setidaknya satu tarif pada tabel penawaran.');
+      return;
+    }
+    if (pricedLines.some((line) => !line.currency.trim())) {
+      setFormError('Isi mata uang pada setiap baris yang memiliki tarif.');
+      return;
+    }
+    const totalSellingEst = Number(quotationForm.totalSellingEst);
     if (totalSellingEst <= 0 || quotationForm.totalCostEst < 0) {
       setFormError('Total penawaran harus lebih dari nol dan estimasi biaya tidak boleh negatif.');
       return;
@@ -301,29 +322,36 @@ export const WorkflowWorkspace: React.FC = () => {
       customerId: customer.id,
       customerName: customer.companyName,
       customerType: quotationForm.customerType,
+      rfqNo: quotationForm.rfqNo.trim(),
+      incoterm: quotationForm.incoterm.trim(),
       origin: quotationForm.origin,
       destination: quotationForm.destination,
       serviceType: quotationForm.serviceType,
       cargoDescription: quotationForm.cargoDescription,
       totalSellingEst,
       totalCostEst: Number(quotationForm.totalCostEst),
-      issuedAt: new Date().toLocaleDateString('id-ID'),
+      issuedAt: new Date().toISOString().slice(0, 10),
       paymentTerms: quotationForm.paymentTerms,
       notes: quotationForm.notes,
-      subtotal,
-      taxAmount,
-      lineItems: quotationForm.lineItems.map((item) => ({ ...item, description: item.description.trim() })),
+      subtotal: totalSellingEst,
+      taxAmount: 0,
+      rateSections: quotationForm.rateSections,
       status: quotationForm.customerType === 'regular' ? 'Approved' : 'sent',
       validUntil: quotationForm.validUntil,
       workflowStage: quotationForm.customerType === 'regular' ? 'ready_for_support' : 'customer_review',
     }));
     if (saved) setQuotationForm((current) => ({
       ...current,
+      rfqNo: '',
+      incoterm: '',
       serviceType: '',
       cargoDescription: '',
+      origin: '',
+      destination: '',
+      totalSellingEst: 0,
       totalCostEst: 0,
       notes: '',
-      lineItems: [{ description: '', quantity: 1, unitPrice: 0, taxRate: 0 }],
+      rateSections: createDefaultQuotationRateSections(),
     }));
   };
 
@@ -335,11 +363,46 @@ export const WorkflowWorkspace: React.FC = () => {
       totalSellingEst: quotation.totalSellingEst,
       totalCostEst: quotation.totalCostEst,
       validUntil: quotation.validUntil,
+      rfqNo: quotation.rfqNo || '',
+      incoterm: quotation.incoterm || '',
+      rateSections: quotation.rateSections
+        ? {
+            oceanFreight: quotation.rateSections.oceanFreight.map((line) => ({ ...line })),
+            exw: quotation.rateSections.exw.map((line) => ({ ...line })),
+            oceanImportHandling: quotation.rateSections.oceanImportHandling.map((line) => ({ ...line })),
+          }
+        : createDefaultQuotationRateSections(),
     });
   };
 
   const handleRevision = (event: React.FormEvent, quotationId: string) => {
     event.preventDefault();
+    const rateLines = [
+      ...revision.rateSections.oceanFreight,
+      ...revision.rateSections.exw,
+      ...revision.rateSections.oceanImportHandling,
+    ];
+    if (rateLines.some((line) => (
+      [line.rate20ft, line.rate40ft, line.rateLcl].some((rate) => rate !== null && (!Number.isFinite(rate) || rate < 0))
+    ))) {
+      setFormError('Tarif quotation harus berupa angka nol atau lebih.');
+      return;
+    }
+    const pricedLines = rateLines.filter((line) => (
+      [line.rate20ft, line.rate40ft, line.rateLcl].some((rate) => rate !== null)
+    ));
+    if (!pricedLines.length) {
+      setFormError('Isi setidaknya satu tarif pada tabel penawaran.');
+      return;
+    }
+    if (pricedLines.some((line) => !line.currency.trim())) {
+      setFormError('Isi mata uang pada setiap baris yang memiliki tarif.');
+      return;
+    }
+    if (revision.totalSellingEst <= 0 || revision.totalCostEst < 0) {
+      setFormError('Total penawaran harus lebih dari nol dan estimasi biaya tidak boleh negatif.');
+      return;
+    }
     if (runAction(() => reviseQuotation(quotationId, revision))) setRevisionId(null);
   };
 
@@ -539,9 +602,6 @@ export const WorkflowWorkspace: React.FC = () => {
 
   const renderSales = () => {
     const selectedQuotationCustomer = customers.find((customer) => customer.id === quotationForm.customerId);
-    const quotationSubtotal = quotationForm.lineItems.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
-    const quotationTax = quotationForm.lineItems.reduce((sum, item) => sum + item.quantity * item.unitPrice * item.taxRate / 100, 0);
-    const quotationTotal = quotationSubtotal + quotationTax;
     const quotationNoPreview = `QUO-HPL-${new Date().getFullYear()}-${String(quotations.length + 1).padStart(4, '0')}`;
     const issueDate = new Date().toLocaleDateString('id-ID');
 
@@ -555,9 +615,9 @@ export const WorkflowWorkspace: React.FC = () => {
               <p className="mt-1 text-xs text-slate-500">Freight Forwarding &amp; Logistics</p>
             </div>
             <div className="min-w-[220px] flex-1 text-right">
-              <h3 className="text-2xl font-black text-slate-800">Logistics Quote</h3>
-              <p className="mt-2 text-xs text-slate-500">Quote Number: <strong className="text-slate-800">{quotationNoPreview}</strong></p>
-              <p className="mt-1 text-xs text-slate-500">Issue Date: <strong className="text-slate-800">{issueDate}</strong></p>
+              <h3 className="text-2xl font-black text-slate-800">QUOTATION</h3>
+              <p className="mt-2 text-xs text-slate-500">Quotation No.: <strong className="text-slate-800">{quotationNoPreview}</strong></p>
+              <p className="mt-1 text-xs text-slate-500">Date: <strong className="text-slate-800">{issueDate}</strong></p>
               <label className="mt-1 flex items-center justify-end gap-2 text-xs text-slate-500">
                 Valid Through
                 <input required type="date" value={quotationForm.validUntil} onChange={(event) => setQuotationForm({ ...quotationForm, validUntil: event.target.value })} className="rounded border border-slate-300 px-2 py-1 text-xs text-slate-800" />
@@ -590,79 +650,60 @@ export const WorkflowWorkspace: React.FC = () => {
                   <option value="incidental">Insidental / customer baru</option>
                 </select>
               </label>
+              <label className="block space-y-1 text-xs font-semibold text-slate-600">
+                RFQ No.
+                <input value={quotationForm.rfqNo} onChange={(event) => setQuotationForm({ ...quotationForm, rfqNo: event.target.value })} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
+              </label>
             </div>
             <div className="space-y-3">
-              <p className="border-b border-slate-300 pb-2 text-xs font-bold uppercase text-slate-700">Payment Conditions</p>
+              <p className="border-b border-slate-300 pb-2 text-xs font-bold uppercase text-slate-700">Informasi penawaran</p>
               <label className="block space-y-1 text-xs font-semibold text-slate-600">
-                Syarat pembayaran
-                <textarea rows={3} value={quotationForm.paymentTerms} onChange={(event) => setQuotationForm({ ...quotationForm, paymentTerms: event.target.value })} placeholder="Contoh: 30 hari setelah invoice" className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
+                Services
+                <input required value={quotationForm.serviceType} onChange={(event) => setQuotationForm({ ...quotationForm, serviceType: event.target.value })} placeholder="Ocean Freight, Air Freight..." className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
               </label>
               <div className="grid gap-3 sm:grid-cols-2">
                 <label className="space-y-1 text-xs font-semibold text-slate-600">
-                  Jenis layanan
-                  <input required value={quotationForm.serviceType} onChange={(event) => setQuotationForm({ ...quotationForm, serviceType: event.target.value })} placeholder="Sea Freight, Air Freight..." className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
+                  POL / Asal
+                  <input required value={quotationForm.origin} onChange={(event) => setQuotationForm({ ...quotationForm, origin: event.target.value })} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
+                </label>
+                <label className="space-y-1 text-xs font-semibold text-slate-600">
+                  POD / Tujuan
+                  <input required value={quotationForm.destination} onChange={(event) => setQuotationForm({ ...quotationForm, destination: event.target.value })} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
+                </label>
+                <label className="space-y-1 text-xs font-semibold text-slate-600">
+                  Incoterm
+                  <input value={quotationForm.incoterm} onChange={(event) => setQuotationForm({ ...quotationForm, incoterm: event.target.value.toUpperCase() })} placeholder="FOB, CIF, DAP..." className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
                 </label>
                 <label className="space-y-1 text-xs font-semibold text-slate-600">
                   Estimasi biaya internal (Rp)
                   <input required min="0" type="number" value={quotationForm.totalCostEst} onChange={(event) => setQuotationForm({ ...quotationForm, totalCostEst: Number(event.target.value) })} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
                 </label>
                 <label className="space-y-1 text-xs font-semibold text-slate-600">
-                  Asal
-                  <input required value={quotationForm.origin} onChange={(event) => setQuotationForm({ ...quotationForm, origin: event.target.value })} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
-                </label>
-                <label className="space-y-1 text-xs font-semibold text-slate-600">
-                  Tujuan
-                  <input required value={quotationForm.destination} onChange={(event) => setQuotationForm({ ...quotationForm, destination: event.target.value })} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
+                  Estimasi selling untuk workflow (Rp)
+                  <input required min="1" type="number" value={quotationForm.totalSellingEst || ''} onChange={(event) => setQuotationForm({ ...quotationForm, totalSellingEst: Number(event.target.value) })} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
                 </label>
               </div>
+              <label className="block space-y-1 text-xs font-semibold text-slate-600">
+                Payment Conditions
+                <textarea rows={2} value={quotationForm.paymentTerms} onChange={(event) => setQuotationForm({ ...quotationForm, paymentTerms: event.target.value })} placeholder="Contoh: 30 hari setelah invoice" className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
+              </label>
             </div>
           </div>
 
-          <div>
-            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-              <div>
-                <h4 className="text-sm font-bold text-slate-800">Rincian layanan</h4>
-                <p className="text-[11px] text-slate-500">Pajak dihitung per baris berdasarkan persentase yang diisi; tarif awal 0%.</p>
-              </div>
-              <button type="button" onClick={() => setQuotationForm((current) => ({ ...current, lineItems: [...current.lineItems, { description: '', quantity: 1, unitPrice: 0, taxRate: 0 }] }))} className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50">
-                + Tambah baris
-              </button>
+          <label className="block space-y-1 text-xs font-semibold text-slate-600">
+            Deskripsi barang / kargo
+            <textarea required value={quotationForm.cargoDescription} onChange={(event) => setQuotationForm({ ...quotationForm, cargoDescription: event.target.value })} rows={2} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
+          </label>
+
+          <div className="space-y-2">
+            <div>
+              <h4 className="text-sm font-bold text-slate-800">Rincian tarif</h4>
+              <p className="text-[11px] text-slate-500">Isi mata uang dan tarif sesuai ukuran/jenis pengiriman. Estimasi selling internal di atas dipakai untuk alur Job Order dan invoice, bukan dicetak sebagai total tarif.</p>
             </div>
-            <div className="overflow-x-auto rounded-lg border border-slate-200">
-              <table className="w-full min-w-[760px] text-left text-xs">
-                <thead className="bg-orange-600 text-white">
-                  <tr>
-                    <th className="px-3 py-2.5 font-bold">Description</th>
-                    <th className="w-24 px-3 py-2.5 font-bold">Qty</th>
-                    <th className="w-40 px-3 py-2.5 font-bold">Unit Price (Rp)</th>
-                    <th className="w-36 px-3 py-2.5 font-bold">Subtotal</th>
-                    <th className="w-32 px-3 py-2.5 font-bold">Tax (%)</th>
-                    <th className="w-36 px-3 py-2.5 font-bold">Tax (Rp)</th>
-                    <th className="w-16 px-3 py-2.5" aria-label="Aksi"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {quotationForm.lineItems.map((item, index) => {
-                    const lineSubtotal = item.quantity * item.unitPrice;
-                    return (
-                      <tr key={index} className="border-t border-slate-200">
-                        <td className="p-2"><input required value={item.description} onChange={(event) => setQuotationForm((current) => ({ ...current, lineItems: current.lineItems.map((line, lineIndex) => lineIndex === index ? { ...line, description: event.target.value } : line) }))} placeholder="Deskripsi layanan / barang" className="w-full rounded border border-slate-300 px-2 py-2" /></td>
-                        <td className="p-2"><input required min="0.01" step="any" type="number" value={item.quantity} onChange={(event) => setQuotationForm((current) => ({ ...current, lineItems: current.lineItems.map((line, lineIndex) => lineIndex === index ? { ...line, quantity: Number(event.target.value) } : line) }))} className="w-full rounded border border-slate-300 px-2 py-2" /></td>
-                        <td className="p-2"><input required min="0" step="any" type="number" value={item.unitPrice || ''} onChange={(event) => setQuotationForm((current) => ({ ...current, lineItems: current.lineItems.map((line, lineIndex) => lineIndex === index ? { ...line, unitPrice: Number(event.target.value) } : line) }))} className="w-full rounded border border-slate-300 px-2 py-2" /></td>
-                        <td className="whitespace-nowrap px-3 py-2 font-semibold">{currency(lineSubtotal)}</td>
-                        <td className="p-2"><div className="flex items-center gap-1"><input required min="0" max="100" step="any" type="number" value={item.taxRate} onChange={(event) => setQuotationForm((current) => ({ ...current, lineItems: current.lineItems.map((line, lineIndex) => lineIndex === index ? { ...line, taxRate: Number(event.target.value) } : line) }))} className="w-full rounded border border-slate-300 px-2 py-2" /><span>%</span></div></td>
-                        <td className="whitespace-nowrap px-3 py-2">{currency(lineSubtotal * item.taxRate / 100)}</td>
-                        <td className="p-2"><button type="button" disabled={quotationForm.lineItems.length === 1} onClick={() => setQuotationForm((current) => ({ ...current, lineItems: current.lineItems.filter((_, lineIndex) => lineIndex !== index) }))} aria-label={`Hapus baris ${index + 1}`} className="rounded px-2 py-1 font-bold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40">×</button></td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-            <label className="mt-3 block max-w-xs space-y-1 text-xs font-semibold text-slate-600">
-              Deskripsi barang / catatan pengiriman
-              <textarea value={quotationForm.cargoDescription} onChange={(event) => setQuotationForm({ ...quotationForm, cargoDescription: event.target.value })} rows={2} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
-            </label>
+            <QuotationRateEditor
+              value={quotationForm.rateSections}
+              onChange={(rateSections) => setQuotationForm((current) => ({ ...current, rateSections }))}
+            />
           </div>
 
           <div className="flex flex-wrap items-end justify-between gap-4 border-t border-slate-200 pt-4">
@@ -671,9 +712,7 @@ export const WorkflowWorkspace: React.FC = () => {
               <textarea rows={2} value={quotationForm.notes} onChange={(event) => setQuotationForm({ ...quotationForm, notes: event.target.value })} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
             </label>
             <div className="w-full max-w-sm space-y-2 text-xs">
-              <div className="flex justify-between"><span>Subtotal</span><strong>{currency(quotationSubtotal)}</strong></div>
-              <div className="flex justify-between"><span>Total pajak</span><strong>{currency(quotationTax)}</strong></div>
-              <div className="flex justify-between border-t-2 border-orange-500 bg-orange-600 px-3 py-2 text-sm text-white"><span className="font-bold">Total</span><strong>{currency(quotationTotal)}</strong></div>
+              <div className="flex justify-between"><span>Estimasi margin internal</span><strong>{currency(quotationForm.totalSellingEst - quotationForm.totalCostEst)}</strong></div>
               <button type="submit" className="w-full rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-bold text-white hover:bg-blue-800">
                 Buat &amp; kirim quotation
               </button>
@@ -720,12 +759,20 @@ export const WorkflowWorkspace: React.FC = () => {
                 )}
               </div>
               {revisionId === quotation.id && (
-                <form onSubmit={(event) => handleRevision(event, quotation.id)} className="mt-4 grid gap-2 border-t border-slate-100 pt-4 md:grid-cols-2">
-                  <input aria-label="Jenis layanan revisi" required value={revision.serviceType} onChange={(event) => setRevision({ ...revision, serviceType: event.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-                  <input aria-label="Deskripsi barang revisi" required value={revision.cargoDescription} onChange={(event) => setRevision({ ...revision, cargoDescription: event.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-                  <input aria-label="Harga penawaran revisi" required min="1" type="number" value={revision.totalSellingEst} onChange={(event) => setRevision({ ...revision, totalSellingEst: Number(event.target.value) })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-                  <input aria-label="Estimasi biaya revisi" required min="0" type="number" value={revision.totalCostEst} onChange={(event) => setRevision({ ...revision, totalCostEst: Number(event.target.value) })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-                  <input aria-label="Berlaku sampai revisi" required type="date" value={revision.validUntil} onChange={(event) => setRevision({ ...revision, validUntil: event.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                <form onSubmit={(event) => handleRevision(event, quotation.id)} className="mt-4 space-y-3 border-t border-slate-100 pt-4">
+                  <div className="grid gap-2 md:grid-cols-2">
+                    <input aria-label="RFQ No. revisi" value={revision.rfqNo} onChange={(event) => setRevision({ ...revision, rfqNo: event.target.value })} placeholder="RFQ No." className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                    <input aria-label="Incoterm revisi" value={revision.incoterm} onChange={(event) => setRevision({ ...revision, incoterm: event.target.value.toUpperCase() })} placeholder="Incoterm" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                    <input aria-label="Jenis layanan revisi" required value={revision.serviceType} onChange={(event) => setRevision({ ...revision, serviceType: event.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                    <input aria-label="Deskripsi barang revisi" required value={revision.cargoDescription} onChange={(event) => setRevision({ ...revision, cargoDescription: event.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                    <input aria-label="Harga penawaran revisi untuk workflow" required min="1" type="number" value={revision.totalSellingEst} onChange={(event) => setRevision({ ...revision, totalSellingEst: Number(event.target.value) })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                    <input aria-label="Estimasi biaya revisi" required min="0" type="number" value={revision.totalCostEst} onChange={(event) => setRevision({ ...revision, totalCostEst: Number(event.target.value) })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                    <input aria-label="Berlaku sampai revisi" required type="date" value={revision.validUntil} onChange={(event) => setRevision({ ...revision, validUntil: event.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                  </div>
+                  <QuotationRateEditor
+                    value={revision.rateSections}
+                    onChange={(rateSections) => setRevision((current) => ({ ...current, rateSections }))}
+                  />
                   <div className="flex gap-2">
                     <button type="submit" className="rounded-lg bg-blue-700 px-3 py-2 text-xs font-bold text-white">Simpan & kirim ulang</button>
                     <button type="button" onClick={() => setRevisionId(null)} className="rounded-lg border px-3 py-2 text-xs">Batal</button>
@@ -1481,13 +1528,7 @@ export const WorkflowWorkspace: React.FC = () => {
               <strong>Margin: {currency(report.margin)}</strong>
               </div>
               <button
-                onClick={() => runAction(() => printDocument('Laporan Margin & PNL', report.createdAt, [
-                  { label: 'Tanggal laporan', value: report.createdAt },
-                  { label: 'Jumlah job', value: String(report.jobCount) },
-                  { label: 'Revenue', value: currency(report.totalRevenue) },
-                  { label: 'Cost', value: currency(report.totalCost) },
-                  { label: 'Margin', value: currency(report.margin) },
-                ]))}
+                onClick={() => runAction(() => printPnlReport(report))}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 font-bold text-slate-700 hover:bg-slate-50"
               >
                 <Printer className="h-3.5 w-3.5" /> Cetak / Simpan PDF

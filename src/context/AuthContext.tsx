@@ -61,7 +61,7 @@ interface AuthContextType {
   updateInvoiceStatus: (invoiceId: string, amountPaid: number, paymentMethod: PaymentMethod) => void;
   recordCustomerApproval: (quotationId: string) => void;
   requestQuotationRevision: (quotationId: string) => void;
-  reviseQuotation: (quotationId: string, revision: Pick<Quotation, 'serviceType' | 'cargoDescription' | 'totalSellingEst' | 'totalCostEst' | 'validUntil'>) => void;
+  reviseQuotation: (quotationId: string, revision: Pick<Quotation, 'serviceType' | 'cargoDescription' | 'totalSellingEst' | 'totalCostEst' | 'validUntil' | 'rfqNo' | 'incoterm' | 'rateSections'>) => void;
   updateCustomerLegalStatus: (customerId: string, verified: boolean) => void;
   createJobFromQuotation: (quotationId: string) => void;
   completeEximWork: (jobId: string, incoterm: string, documentsComplete: boolean) => void;
@@ -747,7 +747,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const reviseQuotation = (
     quotationId: string,
-    revision: Pick<Quotation, 'serviceType' | 'cargoDescription' | 'totalSellingEst' | 'totalCostEst' | 'validUntil'>,
+    revision: Pick<Quotation, 'serviceType' | 'cargoDescription' | 'totalSellingEst' | 'totalCostEst' | 'validUntil' | 'rfqNo' | 'incoterm' | 'rateSections'>,
   ) => {
     const quotation = quotations.find((item) => item.id === quotationId);
     if (!quotation || quotation.workflowStage !== 'revision_requested') {

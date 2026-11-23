@@ -1,5 +1,5 @@
 import hopelmarLogo from '../../assets/hopelmar-logo.jpeg';
-import type { CustomerAccount, Job, Quotation } from '../types';
+import type { CustomerAccount, Job, PnlReport, Quotation, QuotationRateLine } from '../types';
 
 export interface PrintDocumentRow {
   label: string;
@@ -50,6 +50,37 @@ const formatDate = (value: string) => {
 
 const formatCurrency = (value: number) => `Rp ${value.toLocaleString('id-ID')}`;
 
+const renderQuotationRateTable = (
+  title: string,
+  lines: QuotationRateLine[],
+  rateColumns: Array<{ field: 'rate20ft' | 'rate40ft' | 'rateLcl' | 'rateOthers'; label: string }>,
+) => {
+  const headers = rateColumns.map((column) => `<th>${escapeHtml(column.label)}</th>`).join('');
+  const rows = lines.map((line) => {
+    const rates = rateColumns.map(({ field }) => {
+      const value = field === 'rateOthers'
+        ? line.rateOthers
+        : line[field] === null ? '' : line[field]?.toLocaleString('id-ID');
+      return `<td${field === 'rateOthers' ? '' : ' class="number"'}>${escapeHtml(value || '')}</td>`;
+    }).join('');
+    return `<tr>
+      <td>${escapeHtml(line.description)}</td>
+      <td>${escapeHtml(line.currency)}</td>
+      ${rates}
+      <td>${escapeHtml(line.uom)}</td>
+      <td>${escapeHtml(line.remarks)}</td>
+    </tr>`;
+  }).join('');
+  const columnCount = rateColumns.length + 4;
+  return `<table class="charges rate-table">
+    <thead>
+      <tr><th colspan="${columnCount}" class="section-title">${escapeHtml(title)}</th></tr>
+      <tr><th>Description</th><th>Currency</th>${headers}<th>UOM</th><th>Remarks</th></tr>
+    </thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+};
+
 export const printQuotationDocument = (quotation: Quotation, customer?: CustomerAccount) => {
   const lineItems = quotation.lineItems?.length
     ? quotation.lineItems
@@ -76,6 +107,36 @@ export const printQuotationDocument = (quotation: Quotation, customer?: Customer
     (sum, item) => sum + item.quantity * item.unitPrice * item.taxRate / 100,
     0,
   );
+  const pricingContent = quotation.rateSections
+    ? [
+        renderQuotationRateTable('OCEAN FREIGHT', quotation.rateSections.oceanFreight, [
+          { field: 'rate20ft', label: "20'" },
+          { field: 'rate40ft', label: "40'" },
+          { field: 'rateLcl', label: 'LCL' },
+        ]),
+        renderQuotationRateTable(`EXW · POL: ${quotation.origin}`, quotation.rateSections.exw, [
+          { field: 'rate20ft', label: "20'" },
+          { field: 'rate40ft', label: "40'" },
+        ]),
+        renderQuotationRateTable('OCEAN IMPORT HANDLING CHARGES', quotation.rateSections.oceanImportHandling, [
+          { field: 'rateLcl', label: 'LCL' },
+          { field: 'rate20ft', label: "20'" },
+          { field: 'rate40ft', label: "40'" },
+          { field: 'rateOthers', label: 'OTHERS' },
+        ]),
+      ].join('')
+    : `<table class="charges">
+        <thead>
+          <tr><th colspan="6" class="section-title">OFFERED SERVICES</th></tr>
+          <tr><th>Description</th><th>Qty</th><th>Unit Price</th><th>Tax</th><th>Amount</th><th>Remarks</th></tr>
+        </thead>
+        <tbody>${rows}</tbody>
+        <tfoot>
+          <tr><th colspan="4">Subtotal</th><td class="number">${escapeHtml(formatCurrency(subtotal))}</td><td></td></tr>
+          <tr><th colspan="4">Tax</th><td class="number">${escapeHtml(formatCurrency(taxAmount))}</td><td></td></tr>
+          <tr class="total"><th colspan="4">TOTAL</th><td class="number">${escapeHtml(formatCurrency(quotation.totalSellingEst))}</td><td></td></tr>
+        </tfoot>
+      </table>`;
   const content = `
     <main class="quotation">
       <header class="letterhead">
@@ -97,7 +158,7 @@ export const printQuotationDocument = (quotation: Quotation, customer?: Customer
       <table class="details">
         <tbody>
           <tr><th>Date</th><td>${escapeHtml(formatDate(quotation.issuedAt || new Date().toISOString()))}</td><th>Quotation No.</th><td>${escapeHtml(quotation.quotationNo)}</td></tr>
-          <tr><th>RFQ No.</th><td>-</td><th>Incoterm</th><td>-</td></tr>
+          <tr><th>RFQ No.</th><td>${escapeHtml(quotation.rfqNo || '-')}</td><th>Incoterm</th><td>${escapeHtml(quotation.incoterm || '-')}</td></tr>
           <tr><th>To</th><td>${escapeHtml(quotation.customerName)}${customer?.address ? `<br>${escapeHtml(customer.address)}` : ''}</td><th>Attn</th><td>${escapeHtml(customer?.contactPerson || '-')}</td></tr>
           <tr><th>Phone</th><td>${escapeHtml(customer?.phone || '-')}</td><th>Services</th><td>${escapeHtml(quotation.serviceType)}</td></tr>
           <tr><th>POL</th><td>${escapeHtml(quotation.origin)}</td><th>POD</th><td>${escapeHtml(quotation.destination)}</td></tr>
@@ -107,18 +168,7 @@ export const printQuotationDocument = (quotation: Quotation, customer?: Customer
 
       <p class="intro">In response to your inquiry, we are pleased to submit our offer as below for your review and perusal:</p>
 
-      <table class="charges">
-        <thead>
-          <tr><th colspan="6" class="section-title">OFFERED SERVICES</th></tr>
-          <tr><th>Description</th><th>Qty</th><th>Unit Price</th><th>Tax</th><th>Amount</th><th>Remarks</th></tr>
-        </thead>
-        <tbody>${rows}</tbody>
-        <tfoot>
-          <tr><th colspan="4">Subtotal</th><td class="number">${escapeHtml(formatCurrency(subtotal))}</td><td></td></tr>
-          <tr><th colspan="4">Tax</th><td class="number">${escapeHtml(formatCurrency(taxAmount))}</td><td></td></tr>
-          <tr class="total"><th colspan="4">TOTAL</th><td class="number">${escapeHtml(formatCurrency(quotation.totalSellingEst))}</td><td></td></tr>
-        </tfoot>
-      </table>
+      ${pricingContent}
 
       ${quotation.paymentTerms ? `<p class="payment"><strong>Payment Conditions:</strong> ${escapeHtml(quotation.paymentTerms)}</p>` : ''}
       ${quotation.cargoDescription ? `<p class="payment"><strong>Cargo Description:</strong> ${escapeHtml(quotation.cargoDescription)}</p>` : ''}
@@ -167,6 +217,12 @@ export const printQuotationDocument = (quotation: Quotation, customer?: Customer
     .charges th:nth-child(4) { width: 12%; }
     .charges th:nth-child(5) { width: 18%; }
     .charges th:nth-child(6) { width: 20%; }
+    .rate-table { margin-bottom: 8px; font-size: 7.5px; }
+    .rate-table th:nth-child(1) { width: 24%; }
+    .rate-table th:nth-child(2) { width: 8%; }
+    .rate-table th:nth-child(3), .rate-table th:nth-child(4), .rate-table th:nth-child(5), .rate-table th:nth-child(6) { width: 10%; }
+    .rate-table th:nth-child(7) { width: 12%; }
+    .rate-table th:nth-child(8) { width: 16%; }
     .number { text-align: right; white-space: nowrap; }
     .charges tfoot th { text-align: right; }
     .charges .total { background: #f5e8e8; font-weight: 700; }
@@ -246,6 +302,79 @@ export const printJobOrder = (job: Job) => {
   openPrintWindow(`Job Order - ${job.jobNo}`, content, styles);
 };
 
+export const printPnlReport = (report: PnlReport) => {
+  const content = `
+    <main class="report">
+      <header class="letterhead">
+        <div class="brand">
+          <img src="${hopelmarLogo}" alt="Hopelmar Logistics">
+          <div>
+            <strong>PT HOPELMAR INTERNATIONAL</strong>
+            <p>Freight Forwarding &amp; Logistics</p>
+            <address>
+              Komplek Perkantoran Permata Executive Apartment, Lantai 2 R.5<br>
+              Jl. Raya Pos Pengumben, Jakarta Barat 11550<br>
+              Telp. 021.53667775 · info@hopelmarlogistics.com · www.hopelmarlogistics.com
+            </address>
+          </div>
+        </div>
+        <div class="heading">
+          <p class="eyebrow">LAPORAN KEUANGAN</p>
+          <h1>Laporan Margin &amp; PNL</h1>
+          <p class="report-date">Tanggal laporan: ${escapeHtml(report.createdAt)}</p>
+        </div>
+      </header>
+      <section class="summary" aria-label="Ringkasan PNL">
+        <article class="metric jobs">
+          <span>Jumlah Job</span>
+          <strong>${escapeHtml(String(report.jobCount))}</strong>
+          <small>job selesai</small>
+        </article>
+        <article class="metric">
+          <span>Revenue</span>
+          <strong>${escapeHtml(formatCurrency(report.totalRevenue))}</strong>
+        </article>
+        <article class="metric">
+          <span>Cost</span>
+          <strong>${escapeHtml(formatCurrency(report.totalCost))}</strong>
+        </article>
+        <article class="metric margin">
+          <span>Margin</span>
+          <strong>${escapeHtml(formatCurrency(report.margin))}</strong>
+          <small>Revenue dikurangi Cost</small>
+        </article>
+      </section>
+      <p class="method">Ringkasan ini berdasarkan snapshot laporan saat dibuat.</p>
+      <footer>Dicetak dari Hopelmar Job Tracker · ${escapeHtml(new Date().toLocaleString('id-ID'))}</footer>
+    </main>`;
+  const styles = `
+    @page { size: A4 portrait; margin: 16mm; }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #1f2937; font: 10px Arial, sans-serif; }
+    .letterhead { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; border-bottom: 3px solid #8a171a; padding-bottom: 14px; }
+    .brand { display: flex; align-items: flex-start; gap: 14px; max-width: 58%; }
+    .brand img { display: block; width: 175px; height: auto; }
+    .brand strong { display: block; margin: 2px 0 3px; color: #8a171a; font-size: 9px; letter-spacing: .06em; }
+    .brand p { margin: 0 0 5px; color: #4b5563; font-size: 8px; }
+    address { color: #6b7280; font-size: 7px; font-style: normal; line-height: 1.5; }
+    .heading { max-width: 42%; text-align: right; }
+    .eyebrow { margin: 0 0 6px; color: #8a171a; font-size: 8px; font-weight: 700; letter-spacing: .16em; }
+    h1 { margin: 0; color: #111827; font-size: 19px; line-height: 1.2; }
+    .report-date { margin: 8px 0 0; color: #6b7280; font-size: 9px; }
+    .summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 24px; }
+    .metric { min-height: 92px; padding: 15px 16px; border: 1px solid #e5e7eb; border-radius: 8px; background: #f9fafb; }
+    .metric span, .metric small { display: block; color: #6b7280; font-size: 9px; }
+    .metric strong { display: block; margin: 10px 0 3px; color: #111827; font-size: 18px; }
+    .metric.jobs strong { font-size: 22px; }
+    .metric.margin { border-color: #e8c5c6; background: #fbf5f5; }
+    .metric.margin strong { color: #8a171a; }
+    .method { margin-top: 18px; color: #6b7280; font-size: 8px; }
+    footer { margin-top: 36px; border-top: 1px solid #e5e7eb; padding-top: 8px; color: #9ca3af; font-size: 8px; }
+    @media print { .metric { break-inside: avoid; } }
+  `;
+  openPrintWindow(`Laporan Margin & PNL - ${report.createdAt}`, content, styles);
+};
+
 export const printDocument = (
   title: string,
   reference: string,
@@ -272,6 +401,14 @@ export const printDocument = (
           .company { color: #1d4ed8; font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
           h1 { font-size: 24px; margin: 10px 0 4px; }
           .reference { color: #475569; font-size: 13px; }
+          .document-header { align-items: flex-start; border-bottom: 3px solid #8a171a; display: flex; gap: 18px; justify-content: space-between; padding-bottom: 14px; }
+          .brand { align-items: flex-start; display: flex; gap: 12px; max-width: 58%; }
+          .brand img { display: block; height: auto; width: 155px; }
+          .brand .company { color: #8a171a; font-size: 9px; letter-spacing: .08em; }
+          .address { color: #6b7280; font-size: 7px; line-height: 1.5; margin-top: 5px; }
+          .document-title { max-width: 42%; text-align: right; }
+          .document-title h1 { color: #111827; font-size: 19px; margin: 0 0 6px; }
+          .document-title .reference { color: #6b7280; font-size: 9px; overflow-wrap: anywhere; }
           table { border-collapse: collapse; width: 100%; }
           th, td { border-bottom: 1px solid #e2e8f0; padding: 12px 10px; text-align: left; vertical-align: top; }
           th { color: #475569; font-size: 12px; font-weight: 600; width: 32%; }
@@ -282,10 +419,18 @@ export const printDocument = (
           footer { border-top: 1px solid #cbd5e1; color: #64748b; font-size: 10px; margin-top: 36px; padding-top: 10px; }
         `;
   const content = `
-        <header>
-          <div class="company">PT Hopelmar International</div>
-          <h1>${escapeHtml(title)}</h1>
-          <div class="reference">${escapeHtml(reference)}</div>
+        <header class="document-header">
+          <div class="brand">
+            <img src="${hopelmarLogo}" alt="Hopelmar Logistics">
+            <div>
+              <div class="company">PT HOPELMAR INTERNATIONAL</div>
+              <div class="address">Freight Forwarding &amp; Logistics<br>Jakarta Barat 11550 · 021.53667775<br>info@hopelmarlogistics.com</div>
+            </div>
+          </div>
+          <div class="document-title">
+            <h1>${escapeHtml(title)}</h1>
+            <div class="reference">${escapeHtml(reference)}</div>
+          </div>
         </header>
         ${tableMarkup}
         <table><tbody>${rowMarkup}</tbody></table>
