@@ -53,7 +53,8 @@ Deno.serve(async (request: Request) => {
     const { data: subscriptions, error: subscriptionError } = await adminClient
       .from('push_subscriptions')
       .select('id, subscription')
-      .eq('user_id', userData.user.id);
+      .eq('user_id', userData.user.id)
+      .eq('device_type', 'mobile');
     if (subscriptionError) throw subscriptionError;
 
     webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Search, Plus, Bell, HelpCircle, X, Smartphone, LoaderCircle } from 'lucide-react';
 import hopelmarSymbol from '../../../assets/hopelmar-symbol.jpeg';
@@ -9,6 +9,17 @@ export interface WorkspaceNotification {
   title: string;
   message: string;
   tab: string;
+  createdAt?: string;
+  readAt?: string | null;
+}
+
+interface NotificationRecord {
+  source_key: string;
+  title: string;
+  message: string;
+  target_tab: string;
+  created_at: string;
+  read_at: string | null;
 }
 
 export interface WorkspaceSearchResult {
@@ -37,6 +48,12 @@ const decodeVapidKey = (key: string) => {
   return Uint8Array.from(rawData, (character) => character.charCodeAt(0));
 };
 
+const getPushDeviceType = (): 'mobile' | 'desktop' => {
+  const isMobileAgent = /android|iphone|ipad|ipod|mobile/i.test(navigator.userAgent);
+  const isTouchMac = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+  return isMobileAgent || isTouchMac ? 'mobile' : 'desktop';
+};
+
 export const Navbar: React.FC<NavbarProps> = ({ 
   breadcrumb, 
   onNewQuotation,
@@ -54,13 +71,23 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [pushEnabled, setPushEnabled] = useState(false);
   const [pushBusy, setPushBusy] = useState(false);
   const [pushMessage, setPushMessage] = useState('');
+  const [notificationError, setNotificationError] = useState('');
+  const [historyAvailable, setHistoryAvailable] = useState(false);
+  const [notificationHistory, setNotificationHistory] = useState<WorkspaceNotification[]>([]);
   const [selectedNotification, setSelectedNotification] = useState<WorkspaceNotification | null>(null);
   const [readIds, setReadIds] = useState<string[]>([]);
   const readNotificationsKey = `hopelmar.read-notifications.${user?.id || 'guest'}`;
   const [searchOpen, setSearchOpen] = useState(false);
   const searchContainer = useRef<HTMLDivElement>(null);
-  const previousNotificationIds = useRef<Set<string> | null>(null);
-  const unreadCount = notifications.filter((notification) => !readIds.includes(notification.id)).length;
+  const previousLocalNotificationIds = useRef<Set<string> | null>(null);
+  const notificationList = useMemo(() => {
+    if (!historyAvailable) return notifications;
+    return notificationHistory;
+  }, [historyAvailable, notificationHistory, notifications]);
+  const isRead = (notification: WorkspaceNotification) => (
+    historyAvailable ? Boolean(notification.readAt) : readIds.includes(notification.id)
+  );
+  const unreadCount = notificationList.filter((notification) => !isRead(notification)).length;
 
   useEffect(() => {
     try {
@@ -76,6 +103,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       setPushEnabled(false);
       return;
     }
+    setPushEnabled(false);
     let active = true;
     void (async () => {
       try {
@@ -100,38 +128,103 @@ export const Navbar: React.FC<NavbarProps> = ({
   }, [user?.id]);
 
   useEffect(() => {
-    const currentIds = new Set(notifications.map((notification) => notification.id));
-    if (previousNotificationIds.current === null) {
-      previousNotificationIds.current = currentIds;
+    if (!user?.id || !isSupabaseConfigured) {
+      setNotificationHistory([]);
+      setHistoryAvailable(false);
+      setNotificationError('');
       return;
     }
-    const added = notifications.filter((notification) => !previousNotificationIds.current?.has(notification.id));
-    previousNotificationIds.current = currentIds;
+
+    let active = true;
+    setNotificationHistory([]);
+    setHistoryAvailable(false);
+    setNotificationError('');
+    setSelectedNotification(null);
+    const toNotification = (item: NotificationRecord): WorkspaceNotification => ({
+      id: item.source_key,
+      title: item.title,
+      message: item.message,
+      tab: item.target_tab,
+      createdAt: item.created_at,
+      readAt: item.read_at,
+    });
+    const loadHistory = async () => {
+      try {
+        const { data, error } = await supabase.from('notifications')
+          .select('source_key, title, message, target_tab, created_at, read_at')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(100);
+        if (error) throw error;
+        if (active) {
+          setNotificationHistory((data || []).map((item: NotificationRecord) => toNotification(item)));
+          setHistoryAvailable(true);
+          setNotificationError('');
+        }
+      } catch (error) {
+        console.error('Failed to sync notification history.', error);
+        if (active) {
+          setHistoryAvailable(false);
+          setNotificationError('Riwayat notifikasi gagal disinkronkan. Pastikan migration notifikasi sudah dijalankan.');
+        }
+      }
+    };
+    void loadHistory();
+
+    const channel = supabase.channel(`notification-history-${user.id}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'notifications',
+        filter: `user_id=eq.${user.id}`,
+      }, (change) => {
+        const row = change.new as NotificationRecord;
+        if (change.eventType === 'INSERT') {
+          const notification = toNotification(row);
+          setNotificationHistory((current) => [
+            notification,
+            ...current.filter((item) => item.id !== notification.id),
+          ].slice(0, 100));
+          setSelectedNotification(notification);
+        } else if (change.eventType === 'UPDATE') {
+          setNotificationHistory((current) => current.map((item) => (
+            item.id === row.source_key ? { ...item, readAt: row.read_at } : item
+          )));
+        }
+      })
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.error('Notification history updates could not be received.', status);
+          if (active) setNotificationError('Pembaruan notifikasi langsung terputus. Muat ulang aplikasi untuk menyinkronkan ulang.');
+        }
+      });
+
+    return () => {
+      active = false;
+      void supabase.removeChannel(channel);
+    };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (user?.id && isSupabaseConfigured) {
+      previousLocalNotificationIds.current = null;
+      return;
+    }
+    const currentIds = new Set(notifications.map((notification) => notification.id));
+    if (previousLocalNotificationIds.current === null) {
+      previousLocalNotificationIds.current = currentIds;
+      return;
+    }
+    const added = notifications.filter((notification) => !previousLocalNotificationIds.current?.has(notification.id));
+    previousLocalNotificationIds.current = currentIds;
     if (added.length === 0) return;
 
     const latest = added[0];
     setSelectedNotification(latest);
-    const updatedReadIds = readIds.filter((id) => !added.some((notification) => notification.id === id));
-    setReadIds(updatedReadIds);
-    try {
-      localStorage.setItem(readNotificationsKey, JSON.stringify(updatedReadIds));
-    } catch (error) {
-      console.error('Failed to persist notification read state.', error);
-    }
-
-    if (pushEnabled && user?.id) {
-      void supabase.functions.invoke('notify-user', {
-        body: { title: latest.title, message: latest.message },
-      }).then(({ error }) => {
-        if (error) {
-          console.error('Could not send device notification.', error);
-          setPushMessage('Push belum terkirim. Pastikan function notify-user sudah di-deploy dan secret VAPID sudah diatur.');
-        }
-      });
-    } else if ('Notification' in window && Notification.permission === 'granted') {
+    if ('Notification' in window && Notification.permission === 'granted') {
       new Notification(latest.title, { body: latest.message, tag: latest.id });
     }
-  }, [notifications, pushEnabled, readIds, readNotificationsKey, user?.id]);
+  }, [notifications, user?.id]);
 
   useEffect(() => {
     if (!selectedNotification) return;
@@ -147,8 +240,27 @@ export const Navbar: React.FC<NavbarProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const markAllRead = () => {
-    const nextReadIds = [...new Set([...readIds, ...notifications.map((notification) => notification.id)])];
+  const markAllRead = async () => {
+    if (historyAvailable && user?.id) {
+      try {
+        const readAt = new Date().toISOString();
+        const { error } = await supabase.from('notifications')
+          .update({ read_at: readAt })
+          .eq('user_id', user.id)
+          .is('read_at', null);
+        if (error) throw error;
+        setNotificationHistory((current) => current.map((notification) => ({
+          ...notification,
+          readAt: notification.readAt || readAt,
+        })));
+      } catch (error) {
+        console.error('Failed to mark notifications as read.', error);
+        setNotificationError('Status baca notifikasi gagal disimpan.');
+      }
+      return;
+    }
+
+    const nextReadIds = [...new Set([...readIds, ...notificationList.map((notification) => notification.id)])];
     setReadIds(nextReadIds);
     try {
       localStorage.setItem(readNotificationsKey, JSON.stringify(nextReadIds));
@@ -157,8 +269,31 @@ export const Navbar: React.FC<NavbarProps> = ({
     }
   };
 
-  const handleNotificationClick = (notification: WorkspaceNotification) => {
-    markAllRead();
+  const handleNotificationClick = async (notification: WorkspaceNotification) => {
+    if (historyAvailable && user?.id && !notification.readAt) {
+      try {
+        const readAt = new Date().toISOString();
+        const { error } = await supabase.from('notifications')
+          .update({ read_at: readAt })
+          .eq('user_id', user.id)
+          .eq('source_key', notification.id);
+        if (error) throw error;
+        setNotificationHistory((current) => current.map((item) => (
+          item.id === notification.id ? { ...item, readAt } : item
+        )));
+      } catch (error) {
+        console.error('Failed to mark notification as read.', error);
+        setNotificationError('Status baca notifikasi gagal disimpan.');
+      }
+    } else if (!historyAvailable && !readIds.includes(notification.id)) {
+      const nextReadIds = [...readIds, notification.id];
+      setReadIds(nextReadIds);
+      try {
+        localStorage.setItem(readNotificationsKey, JSON.stringify(nextReadIds));
+      } catch (error) {
+        console.error('Failed to persist notification read state.', error);
+      }
+    }
     setNotificationsOpen(false);
     onSelectNotification?.(notification);
   };
@@ -205,10 +340,13 @@ export const Navbar: React.FC<NavbarProps> = ({
           user_id: user.id,
           endpoint: subscription.endpoint,
           subscription: subscription.toJSON(),
+          device_type: getPushDeviceType(),
         }, { onConflict: 'endpoint' });
         if (error) throw error;
         setPushEnabled(true);
-        setPushMessage('Notifikasi perangkat aktif. Pastikan izin notifikasi browser juga diizinkan.');
+        setPushMessage(getPushDeviceType() === 'mobile'
+          ? 'Notifikasi HP aktif. Pastikan izin notifikasi browser juga diizinkan.'
+          : 'Browser ini terdaftar sebagai komputer. Push workflow hanya dikirim ke HP yang mengaktifkan notifikasi.');
       }
     } catch (error) {
       setPushMessage(error instanceof Error ? error.message : 'Notifikasi perangkat gagal diaktifkan.');
@@ -319,22 +457,23 @@ export const Navbar: React.FC<NavbarProps> = ({
             {notificationsOpen && (
               <div className="absolute right-0 top-full z-50 mt-2 w-[min(90vw,360px)] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl">
                 <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
-                  <div><p className="text-sm font-bold text-slate-900">Notifikasi</p><p className="text-[10px] text-slate-500">{notifications.length} hal yang perlu diperhatikan</p></div>
-                  <button type="button" onClick={markAllRead} className="text-[10px] font-bold text-blue-700 hover:text-blue-900">Tandai dibaca</button>
+                  <div><p className="text-sm font-bold text-slate-900">Notifikasi</p><p className="text-[10px] text-slate-500">{notificationList.length} notifikasi tersimpan</p></div>
+                  <button type="button" onClick={() => void markAllRead()} className="text-[10px] font-bold text-blue-700 hover:text-blue-900">Tandai dibaca</button>
                 </div>
                 <div className="max-h-80 overflow-y-auto p-2">
-                  {notifications.length ? notifications.map((notification) => (
-                    <button type="button" key={notification.id} onClick={() => handleNotificationClick(notification)} className={`mb-1 block w-full rounded-lg px-3 py-2.5 text-left hover:bg-slate-50 ${!readIds.includes(notification.id) ? 'bg-blue-50/70' : ''}`}>
+                  {notificationList.length ? notificationList.map((notification) => (
+                    <button type="button" key={notification.id} onClick={() => void handleNotificationClick(notification)} className={`mb-1 block w-full rounded-lg px-3 py-2.5 text-left hover:bg-slate-50 ${!isRead(notification) ? 'bg-blue-50/70' : ''}`}>
                       <span className="flex items-start gap-2">
-                        {!readIds.includes(notification.id) && <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-blue-600" />}
+                        {!isRead(notification) && <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-blue-600" />}
                         <span className="min-w-0">
                           <span className="block text-xs font-bold text-slate-800">{notification.title}</span>
                           <span className="mt-1 block text-[10px] leading-relaxed text-slate-600">{notification.message}</span>
+                          {notification.createdAt && <span className="mt-1 block text-[9px] text-slate-400">{new Date(notification.createdAt).toLocaleString('id-ID')}</span>}
                           <span className="mt-1 block text-[10px] font-bold text-blue-700">Buka daftar terkait</span>
                         </span>
                       </span>
                     </button>
-                  )) : <p className="p-5 text-center text-xs text-slate-500">Belum ada hal yang perlu ditindaklanjuti.</p>}
+                  )) : <p className="p-5 text-center text-xs text-slate-500">Belum ada notifikasi.</p>}
                 </div>
                 <div className="border-t border-slate-100 p-3">
                   <button type="button" onClick={() => void handlePushToggle()} disabled={pushBusy} className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50">
@@ -342,6 +481,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     {pushBusy ? 'Memproses...' : pushEnabled ? 'Matikan notifikasi HP' : 'Aktifkan notifikasi HP'}
                   </button>
                   {pushMessage && <p role="status" className="mt-2 text-center text-[10px] text-slate-600">{pushMessage}</p>}
+                  {notificationError && <p role="status" className="mt-2 text-center text-[10px] text-red-600">{notificationError}</p>}
                   <p className="mt-2 text-center text-[10px] text-slate-500">Di HP hanya menerima pemberitahuan. Perbaikan dokumen dilakukan di laptop/PC.</p>
                 </div>
               </div>

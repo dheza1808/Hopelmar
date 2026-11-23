@@ -1397,6 +1397,27 @@ export const WorkflowWorkspace: React.FC = () => {
     </Panel>
   );
 
+  const renderAccountingInvoices = () => (
+    <Panel title="Invoice" subtitle="Invoice yang diterbitkan Admin Invoice dan tersinkron dari workflow bersama.">
+      {invoices.length === 0
+        ? <EmptyState>Belum ada invoice.</EmptyState>
+        : <div className="space-y-2">{invoices.map((invoice) => (
+          <div key={invoice.id} className="rounded-lg border p-3 text-xs">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <strong>{invoice.invoiceNo} · {invoice.customerName}</strong>
+              <span className="rounded-full bg-blue-50 px-2 py-1 font-bold text-blue-700">{invoice.status}</span>
+            </div>
+            <p className="mt-1 text-slate-600">
+              {invoice.jobNo} · Total {currency(invoice.totalSelling)} · Sisa {currency(invoice.outstandingBalance)}
+            </p>
+            <p className="mt-1 text-slate-500">
+              Terbit {invoice.issueDate} · Jatuh tempo {invoice.dueDate} · {invoice.deliveryStatus === 'sent' ? 'Terkirim ke customer' : 'Belum dikirim'}
+            </p>
+          </div>
+        ))}</div>}
+    </Panel>
+  );
+
   const renderProcurement = () => (
     <div className="space-y-5">
       <Panel title="Pengadaan internal">
@@ -1663,6 +1684,7 @@ export const WorkflowWorkspace: React.FC = () => {
         if (activeTab === 'petty-cash') return renderPettyCash();
         return renderAdmin();
       case 'accounting':
+        if (activeTab === 'billing') return renderAccountingInvoices();
         if (activeTab === 'pnl-data') return <div className="space-y-5">{renderReports()}{renderReconciliation()}</div>;
         if (activeTab === 'margin-report') return renderReports();
         return <div className="space-y-5">{renderDashboard()}{renderReconciliation()}</div>;

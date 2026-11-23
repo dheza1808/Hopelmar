@@ -53,6 +53,7 @@ export const roleNavItems: Record<UserRole, { id: string; label: string; icon: t
   accounting: [
     { id: 'dashboard', label: 'Dashboard Keuangan', icon: LayoutDashboard },
     { id: 'job-history', label: 'Job Order History', icon: History },
+    { id: 'billing', label: 'Invoice', icon: ReceiptText },
     { id: 'pnl-data', label: 'Data PNL', icon: BarChart3 },
     { id: 'margin-report', label: 'Laporan Margin', icon: Scale },
   ],

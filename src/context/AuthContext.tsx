@@ -1,4 +1,4 @@
-import React, { createContext, Dispatch, SetStateAction, useContext, useEffect, useState } from 'react';
+import React, { createContext, Dispatch, SetStateAction, useContext, useEffect, useRef, useState } from 'react';
 import {
   AssignedJob,
   CustomerAccount,
@@ -162,6 +162,7 @@ const toJob = (job: AssignedJob): Job => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [workflowLoading, setWorkflowLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [customers, setCustomers] = usePersistentState<CustomerAccount[]>('customers', initialCustomerAccounts);
   const [jobs, setJobs] = usePersistentState<Job[]>('jobs', initialAssignedJobs.map(toJob));
@@ -176,6 +177,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [pettyCashEntries, setPettyCashEntries] = usePersistentState<PettyCashEntry[]>('petty-cash', []);
   const [debitNotes, setDebitNotes] = usePersistentState<DebitNote[]>('debit-notes', []);
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
+  const workflowReady = useRef(false);
+  const workflowSnapshot = useRef(new Map<string, string>());
+  const localWorkflowState = useRef({ customers, quotations, jobs, invoices });
+  localWorkflowState.current = { customers, quotations, jobs, invoices };
 
   useEffect(() => {
     let active = true;
@@ -261,6 +266,195 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       authListener.subscription.unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    if (!user?.id || !isSupabaseConfigured) {
+      workflowReady.current = false;
+      workflowSnapshot.current.clear();
+      setWorkflowLoading(false);
+      return;
+    }
+
+    let active = true;
+    workflowReady.current = false;
+    setWorkflowLoading(true);
+    setAuthError(null);
+    const userId = user.id;
+    const userRole = user.role;
+    const recordKey = (type: string, id: string) => `${type}:${id}`;
+    const canWrite = (type: string) => (
+      type === 'customer'
+        ? userRole === 'sales_marketing'
+        : type === 'quotation'
+          ? userRole === 'sales_marketing' || userRole === 'sales_support'
+          : type === 'invoice'
+            ? userRole === 'admin_invoice' || userRole === 'accounting'
+          : true
+    );
+
+    const syncWorkflow = async () => {
+      try {
+        const { data: currentRecords, error: loadError } = await supabase
+          .from('workflow_records')
+          .select('record_type, record_id');
+        if (loadError) throw loadError;
+
+        const remoteKeys = new Set((currentRecords || []).map((record) => recordKey(record.record_type, record.record_id)));
+        const local = localWorkflowState.current;
+        const seedRows = [
+          ...local.customers.filter((item) => canWrite('customer') && !remoteKeys.has(recordKey('customer', item.id)))
+            .map((item) => ({ record_type: 'customer', record_id: item.id, payload: item })),
+          ...local.quotations.filter((item) => canWrite('quotation') && !remoteKeys.has(recordKey('quotation', item.id)))
+            .map((item) => ({ record_type: 'quotation', record_id: item.id, payload: item })),
+          ...local.jobs.filter((item) => canWrite('job') && !remoteKeys.has(recordKey('job', item.id)))
+            .map((item) => ({ record_type: 'job', record_id: item.id, payload: item })),
+          ...local.invoices.filter((item) => canWrite('invoice') && !remoteKeys.has(recordKey('invoice', item.id)))
+            .map((item) => ({ record_type: 'invoice', record_id: item.id, payload: item })),
+        ];
+
+        if (seedRows.length) {
+          const { error: seedError } = await supabase.from('workflow_records').upsert(
+            seedRows.map((record) => ({
+              ...record,
+              updated_by: userId,
+              should_notify: true,
+            })),
+            { onConflict: 'record_type,record_id', ignoreDuplicates: true },
+          );
+          if (seedError) throw seedError;
+        }
+
+        const { data, error } = await supabase
+          .from('workflow_records')
+          .select('record_type, record_id, payload');
+        if (error) throw error;
+        if (!active) return;
+
+        const cloudCustomers = (data || [])
+          .filter((record) => record.record_type === 'customer')
+          .map((record) => record.payload as CustomerAccount);
+        const cloudQuotations = (data || [])
+          .filter((record) => record.record_type === 'quotation')
+          .map((record) => record.payload as Quotation);
+        const cloudJobs = (data || [])
+          .filter((record) => record.record_type === 'job')
+          .map((record) => record.payload as Job);
+        const cloudInvoices = (data || [])
+          .filter((record) => record.record_type === 'invoice')
+          .map((record) => record.payload as Invoice);
+
+        const mergeById = <T extends { id: string }>(localItems: T[], cloudItems: T[]) => {
+          const merged = new Map(localItems.map((item) => [item.id, item]));
+          cloudItems.forEach((item) => merged.set(item.id, item));
+          return [...merged.values()];
+        };
+        const mergedCustomers = mergeById(local.customers, cloudCustomers);
+        const mergedQuotations = mergeById(local.quotations, cloudQuotations);
+        const mergedJobs = mergeById(local.jobs, cloudJobs);
+        const mergedInvoices = mergeById(local.invoices, cloudInvoices);
+
+        workflowSnapshot.current.clear();
+        mergedCustomers.forEach((item) => workflowSnapshot.current.set(recordKey('customer', item.id), JSON.stringify(item)));
+        mergedQuotations.forEach((item) => workflowSnapshot.current.set(recordKey('quotation', item.id), JSON.stringify(item)));
+        mergedJobs.forEach((item) => workflowSnapshot.current.set(recordKey('job', item.id), JSON.stringify(item)));
+        mergedInvoices.forEach((item) => workflowSnapshot.current.set(recordKey('invoice', item.id), JSON.stringify(item)));
+        setCustomers(mergedCustomers);
+        setQuotations(mergedQuotations);
+        setJobs(mergedJobs);
+        setInvoices(mergedInvoices);
+        workflowReady.current = true;
+        setAuthError(null);
+        setWorkflowLoading(false);
+
+        const channel = supabase.channel(`workflow-records-${userId}`)
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'workflow_records' }, (change) => {
+            if (change.eventType === 'DELETE') return;
+            const record = change.new as { record_type?: string; record_id?: string; payload?: unknown };
+            if (
+              typeof record.record_type !== 'string'
+              || typeof record.record_id !== 'string'
+              || !record.payload
+              || typeof record.payload !== 'object'
+            ) return;
+            const payload = record.payload as { id?: string };
+            if (payload.id !== record.record_id) return;
+
+            workflowSnapshot.current.set(recordKey(record.record_type, record.record_id), JSON.stringify(payload));
+            if (record.record_type === 'customer') {
+              setCustomers((items) => mergeById(items, [payload as CustomerAccount]));
+            } else if (record.record_type === 'quotation') {
+              setQuotations((items) => mergeById(items, [payload as Quotation]));
+            } else if (record.record_type === 'job') {
+              setJobs((items) => mergeById(items, [payload as Job]));
+            } else if (record.record_type === 'invoice') {
+              setInvoices((items) => mergeById(items, [payload as Invoice]));
+            }
+          })
+          .subscribe((status) => {
+            if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+              console.error('Shared workflow updates could not be received.', status);
+              if (active) setAuthError('Pembaruan workflow langsung terputus. Muat ulang aplikasi untuk menyinkronkan ulang.');
+            }
+          });
+
+        const channelCleanup = () => { void supabase.removeChannel(channel); };
+        cleanupRealtime = channelCleanup;
+      } catch (error) {
+        console.error('Failed to sync shared workflow data.', error);
+        if (active) {
+          setAuthError('Data workflow bersama gagal dimuat. Pastikan migration shared workflow sudah dijalankan.');
+          setWorkflowLoading(false);
+        }
+      }
+    };
+
+    let cleanupRealtime = () => {};
+    void syncWorkflow();
+    return () => {
+      active = false;
+      cleanupRealtime();
+    };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!user?.id || !isSupabaseConfigured || !workflowReady.current) return;
+    const records = [
+      ...customers.map((item) => ({ type: 'customer', id: item.id, payload: item })),
+      ...quotations.map((item) => ({ type: 'quotation', id: item.id, payload: item })),
+      ...jobs.map((item) => ({ type: 'job', id: item.id, payload: item })),
+      ...invoices.map((item) => ({ type: 'invoice', id: item.id, payload: item })),
+    ];
+    const changed = records.filter((record) => (
+      workflowSnapshot.current.get(`${record.type}:${record.id}`) !== JSON.stringify(record.payload)
+    ));
+    if (!changed.length) return;
+
+    changed.forEach((record) => {
+      workflowSnapshot.current.set(`${record.type}:${record.id}`, JSON.stringify(record.payload));
+    });
+    const syncRecords = async () => {
+      for (const type of ['customer', 'quotation', 'job', 'invoice']) {
+        const batch = changed.filter((record) => record.type === type);
+        if (!batch.length) continue;
+        const { error } = await supabase.from('workflow_records').upsert(
+          batch.map((record) => ({
+            record_type: record.type,
+            record_id: record.id,
+            payload: record.payload,
+            updated_by: user.id,
+            should_notify: true,
+          })),
+          { onConflict: 'record_type,record_id' },
+        );
+        if (error) {
+          console.error(`Failed to sync ${type} workflow records.`, error);
+          setAuthError(`Perubahan ${type} gagal disimpan ke server. Periksa koneksi dan izin akun.`);
+          return;
+        }
+      }
+    };
+    void syncRecords();
+  }, [customers, invoices, jobs, quotations, user?.id]);
 
   const login = async (username: string, password: string) => {
     setAuthError(null);
@@ -714,7 +908,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         user,
         role: user?.role ?? null,
-        loading,
+        loading: loading || workflowLoading,
         authError,
         login,
         logout,
